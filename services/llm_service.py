@@ -13,37 +13,51 @@ MODEL_ID = "meta.llama3-8b-instruct-v1:0"
 
 # 비동기 처리는 일단 빼고 동기 버전으로 다시 작성 (boto3는 비동기 설정이 더 복잡해서)
 def generate_recommendation_text(user_prompt: str, sound_results: List[Dict]) -> str:
+    # --- 1. 시스템 메시지 (페르소나)를 영어로 부여! ---
     system_message = (
-        "You are an expert who recommends personalized sleep sounds with empathy. "
-        "Based on the user's situation and the provided sound list, choose one or two most suitable sounds and explain why they would be helpful. "
-        "**Your final answer MUST be written in gentle and natural Korean.**"
+        "You are a 'Sleep Therapist' who writes with deep empathy for the user's tired mind, "
+        "based on your knowledge of psychology and sleep science. Your goal is to write a warm, "
+        "comforting essay, not a dry, technical manual. Start by acknowledging the user's "
+        "situation with empathy, then naturally connect their problem to the recommended sounds. "
+        "**You must write your entire response in gentle and natural Korean.**"
     )
+    
     sound_list_text = "\n".join([
-        f"- 제목: {sound['filename']}, 설명: {sound['effect']}" for sound in sound_results
+        f"- Title: {sound['filename']}, Description: {sound['effect']}" for sound in sound_results
     ])
-    final_prompt_for_user = (
-        f"Based on the following information, please write a warm and persuasive recommendation for the user.\n\n"
-        f"--- User's Status ---\n{user_prompt}\n\n" # 이 user_prompt는 이제 영어로 들어옴
-        f"--- Recommended Sound List ---\n{sound_list_text}\n\n"
-        f"**Remember to write the entire response in polite and natural Korean.**"
-    )
+    
+    # --- 2. 최종 프롬프트와 '좋은 답변의 예시'도 영어로 제공! ---
+    final_prompt_for_user = f"""Based on the following information, please write a warm and persuasive recommendation essay for the user.
 
-    # 3. Llama 3가 요구하는 엄격한 프롬프트 형식으로 변환
+--- User's Status ---
+{user_prompt}
+
+--- Recommended Sound List ---
+{sound_list_text}
+
+--- Example of a good response ---
+"I see you've had many nights of tossing and turning due to stress lately. On days like these, the sound of nature can be a great comfort to gently soothe your mind. In particular, the steady and peaceful rhythm of 'night crickets' can help you break the chain of complex thoughts and calm your mind. As you listen to this sound, try to surrender yourself to the comfort, as if you were lying in a wide field gazing at the night sky."
+---
+
+Now, following the persona and the example style, write a new recommendation for the user. Remember to write the entire response in polite and natural Korean.
+"""
+
+    # Llama 3 프롬프트 형식으로 변환하는 부분
     prompt = f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 {system_message}<|eot_id|><|start_header_id|>user<|end_header_id|>
 
 {final_prompt_for_user}<|eot_id|><|start_header_id|>assistant<|end_header_id|>"""
 
-    # 4. Bedrock API에 보낼 요청 본문(body) 생성
+    # Bedrock API에 보낼 요청 본문(body) 생성
     body = json.dumps({
         "prompt": prompt,
         "max_gen_len": 512,
-        "temperature": 0.5,
+        "temperature": 0.7,  
     })
 
     try:
-        # 5. Bedrock API 호출
+        # Bedrock API 호출
         response = bedrock_runtime.invoke_model(
             body=body,
             modelId=MODEL_ID,
@@ -51,12 +65,11 @@ def generate_recommendation_text(user_prompt: str, sound_results: List[Dict]) ->
             contentType="application/json"
         )
         
-        # 6. Bedrock 응답 결과 파싱
+        # Bedrock 응답 결과 파싱
         response_body = json.loads(response.get("body").read())
         
         return response_body.get("generation")
 
     except Exception as e:
         print(f"Error calling Bedrock API: {e}")
-        # (fallback 로직은 그대로)
         raise e
