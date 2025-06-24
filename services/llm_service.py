@@ -14,17 +14,18 @@ MODEL_ID = "meta.llama3-8b-instruct-v1:0"
 # 비동기 처리는 일단 빼고 동기 버전으로 다시 작성 (boto3는 비동기 설정이 더 복잡해서)
 def generate_recommendation_text(user_prompt: str, sound_results: List[Dict]) -> str:
     system_message = (
-        "너는 사용자의 현재 상황과 기분에 공감하며, 가장 적절한 수면 사운드를 다정하게 추천해주는 전문가야. "
-        "주어진 사운드 목록 중에서 가장 적합한 1~2개를 골라, 왜 그 사운드가 사용자에게 도움이 될지 구체적인 이유를 들어 설명해줘."
+        "You are an expert who recommends personalized sleep sounds with empathy. "
+        "Based on the user's situation and the provided sound list, choose one or two most suitable sounds and explain why they would be helpful. "
+        "**Your final answer MUST be written in gentle and natural Korean.**"
     )
     sound_list_text = "\n".join([
         f"- 제목: {sound['filename']}, 설명: {sound['effect']}" for sound in sound_results
     ])
     final_prompt_for_user = (
-        f"아래는 사용자의 현재 상태와, 그에 맞춰 1차로 추천된 사운드 목록이야.\n\n"
-        f"--- 사용자 상태 ---\n{user_prompt}\n\n"
-        f"--- 추천 사운드 목록 ---\n{sound_list_text}\n\n"
-        f"이 정보를 바탕으로, 사용자만을 위한 따뜻하고 설득력 있는 추천사를 작성해줘."
+        f"Based on the following information, please write a warm and persuasive recommendation for the user.\n\n"
+        f"--- User's Status ---\n{user_prompt}\n\n" # 이 user_prompt는 이제 영어로 들어옴
+        f"--- Recommended Sound List ---\n{sound_list_text}\n\n"
+        f"**Remember to write the entire response in polite and natural Korean.**"
     )
 
     # 3. Llama 3가 요구하는 엄격한 프롬프트 형식으로 변환
