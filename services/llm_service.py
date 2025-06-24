@@ -15,11 +15,13 @@ MODEL_ID = "meta.llama3-8b-instruct-v1:0"
 def generate_recommendation_text(user_prompt: str, sound_results: List[Dict]) -> str:
     # --- 1. 시스템 메시지 (페르소나)를 영어로 부여! ---
     system_message = (
-        "You are a 'Sleep Therapist' who writes with deep empathy for the user's tired mind, "
-        "based on your knowledge of psychology and sleep science. Your goal is to write a warm, "
-        "comforting essay, not a dry, technical manual. Start by acknowledging the user's "
-        "situation with empathy, then naturally connect their problem to the recommended sounds. "
-        "**You must write your entire response in gentle and natural Korean.**"
+        "You are a 'Sleep Therapist' who writes with deep empathy for the user's tired mind, based on your knowledge of psychology and sleep science. "
+        "Your goal is to write a warm, comforting essay, not a dry, technical manual. "
+        "Follow these steps to structure your response: "
+        "1. Start by acknowledging the user's specific feelings and struggles to show empathy. "
+        "2. Choose the single best sound from the list that directly addresses the user's main problem. "
+        "3. Naturally connect the sound's effect to the user's problem and describe the comforting experience the user will have. "
+        "**Your entire response must be written in gentle, natural, and non-repetitive Korean.**"
     )
     
     sound_list_text = "\n".join([
@@ -27,7 +29,7 @@ def generate_recommendation_text(user_prompt: str, sound_results: List[Dict]) ->
     ])
     
     # --- 2. 최종 프롬프트와 '좋은 답변의 예시'도 영어로 제공! ---
-    final_prompt_for_user = f"""Based on the following information, please write a warm and persuasive recommendation essay for the user.
+    final_prompt_for_user = f"""Based on the user's situation and the provided sound list, please write a warm and persuasive recommendation essay for the user. Follow the thinking process outlined in the system message.
 
 --- User's Status ---
 {user_prompt}
@@ -35,11 +37,13 @@ def generate_recommendation_text(user_prompt: str, sound_results: List[Dict]) ->
 --- Recommended Sound List ---
 {sound_list_text}
 
---- Example of a good response ---
-"I see you've had many nights of tossing and turning due to stress lately. On days like these, the sound of nature can be a great comfort to gently soothe your mind. In particular, the steady and peaceful rhythm of 'night crickets' can help you break the chain of complex thoughts and calm your mind. As you listen to this sound, try to surrender yourself to the comfort, as if you were lying in a wide field gazing at the night sky."
+--- Example of an excellent response (This is the style you should aim for) ---
+"요즘 스트레스가 많아 뒤척이는 밤이 많으셨군요. 그런 날에는 마음을 차분하게 다독여줄 자연의 소리가 큰 위로가 될 수 있어요. 
+특히 '밤 귀뚜라미 소리'가 들려주는 일정하고 평화로운 리듬은, 복잡한 생각의 고리를 끊고 마음을 고요하게 만드는 데 도움을 줄 거예요. 
+이 소리를 들으며, 마치 너른 들판에 누워 밤하늘을 보는 듯한 편안함에 몸을 맡겨보세요. 오늘 밤은 부디 푹 주무시길 바랄게요."
 ---
 
-Now, following the persona and the example style, write a new recommendation for the user. Remember to write the entire response in polite and natural Korean.
+Now, think step-by-step and then write the final recommendation for the user. Do not use awkward phrases like '의심스러운'. Ensure the entire response is in polite and natural Korean.
 """
 
     # Llama 3 프롬프트 형식으로 변환하는 부분
