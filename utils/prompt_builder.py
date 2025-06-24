@@ -17,6 +17,7 @@ def build_prompt(user_input: Dict[str, any]) -> str:
     preference = user_input.get("preference", [])
     issues = user_input.get("issues", "최근 수면의 질이 낮음")
 
+    # 영어로 바꾸기!!
     return (
         f"사용자는 '{goal}'을(를) 원하고, "
         f"선호하는 사운드는 {', '.join(preference)}이며, "

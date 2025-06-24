@@ -23,7 +23,7 @@ def recommend(user_input: dict):
     except Exception as e:
         # LLM 호출 중 에러 발생하는 경우
         print(f"LLM generation failed: {e}. Falling back to default text.")
-        sound_titles = ", ".join([sound['title'] for sound in similar_sounds])
+        sound_titles = ", ".join([sound['filename'] for sound in similar_sounds])
         fallback_text = (
             f"당신의 현재 상황을 고려하여 몇 가지 사운드를 찾아봤어요. "
             f"'{sound_titles}' 같은 소리는 어떠신가요? "
