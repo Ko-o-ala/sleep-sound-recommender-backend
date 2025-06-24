@@ -19,6 +19,54 @@ Bedrock 없이도 로컬에서 전체 파이프라인을 실행할 수 있도록
 
 ---
 
+## 개발 환경 설정 및 실행
+### 설정 방법
+clone 해주기
+```bash
+git clone
+cd python-engine
+```
+
+가상환경 생성
+```bash
+python3 -m venv venv
+```
+
+가상환경 활성화
+```bash
+source venv/bin/activate
+(윈도우는 아래)
+.\venv\Scripts\activate
+```
+
+의존성 라이브러리 설치
+```bash
+pip install -r requirements.txt
+```
+
+환경 변수 설정 (API 키)
+최상위 경로에 .env 파일 생성하고 아래 내용 추가
+(담당자에게 문의해주세오)
+```bash
+OPENAI_API_KEY=""
+```
+
+### 실행 방법
+데이터베이스 인덱스 생성
+sound_pool.json에 사운드 데이터를 추가/수정한 경우
+아래 스크립트를 실행해 검색용 인덱스를 새로 만들어줘야 함
+```bash
+python3 scripts/index_builder.py
+```
+
+FastAPI로 구현된 추천 서버 실행
+```bash
+uvicorn app:app --reload
+```
+서버가 성공적으로 실행되면 브라우저에서 http://127.0.0.1:8000/docs 로 접속해 API 문서 확인 가능
+
+---
+
 ## 폴더 구조
 
 ```

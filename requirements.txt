@@ -3,3 +3,5 @@ uvicorn
 sentence-transformers
 faiss-cpu
 numpy
+openai
+python-dotenv
