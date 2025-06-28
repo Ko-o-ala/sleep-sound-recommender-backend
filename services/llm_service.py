@@ -12,29 +12,31 @@ bedrock_runtime = boto3.client(
 MODEL_ID = "meta.llama3-8b-instruct-v1:0"
 
 # 비동기 처리는 일단 빼고 동기 버전으로 다시 작성 (boto3는 비동기 설정이 더 복잡해서)
-def generate_recommendation_text(user_prompt: str, sound_results: List[Dict]) -> str:
-    # --- 1. 시스템 메시지 (페르소나)를 영어로 부여! ---
+def generate_recommendation_text(user_prompt: str, sound_results: List[Dict], user_preferences: Dict) -> str:
+    
+    # --- 시스템 메시지: 이제 '종합적인 판단'을 하도록 역할을 수정! ---
     system_message = (
-        "You are a 'Sleep Therapist' who writes with deep empathy for the user's tired mind, based on your knowledge of psychology and sleep science. "
-        "Your goal is to write a warm, comforting essay, not a dry, technical manual. "
-        "Follow these steps to structure your response: "
-        "1. Start by acknowledging the user's specific feelings and struggles to show empathy. "
-        "2. Choose the single best sound from the list that directly addresses the user's main problem. "
-        "3. Naturally connect the sound's effect to the user's problem and describe the comforting experience the user will have. "
-        "**Your entire response must be written in gentle, natural, and non-repetitive Korean.**"
+        "You are a 'Sleep Therapist' who writes with deep empathy. Your goal is to write a warm, comforting essay. "
+        "You will be given the user's current needs, their stated long-term preferences, and a list of potentially relevant sounds. "
+        "Your task is to thoughtfully synthesize all this information. "
+        "Acknowledge both their current situation and their preferences, and then recommend one or two sounds from the list that best address the user's overall context. "
+        "**Your entire response must be written in gentle and natural Korean.**"
     )
     
     sound_list_text = "\n".join([
         f"- Title: {sound['filename']}, Description: {sound['effect']}" for sound in sound_results
     ])
     
-    # --- 2. 최종 프롬프트와 '좋은 답변의 예시'도 영어로 제공! ---
-    final_prompt_for_user = f"""Based on the user's situation and the provided sound list, please write a warm and persuasive recommendation essay for the user. Follow the thinking process outlined in the system message.
+    # --- 최종 프롬프트: '사용자 선호도' 섹션을 명시적으로 추가! ---
+    final_prompt_for_user = f"""Based on all the following information, please write a warm and persuasive recommendation essay for the user.
 
---- User's Status ---
+--- User's Current Need (deduced from survey) ---
 {user_prompt}
 
---- Recommended Sound List ---
+--- User's Stated Preference (from survey) ---
+The user has explicitly stated they prefer '{user_preferences.get("preferredSleepSound")}' sounds and find '{user_preferences.get("calmingSoundType")}' sounds calming.
+
+--- Top 3 Sounds based on Similarity Search (from RAG) ---
 {sound_list_text}
 
 --- Example of an excellent response (This is the style you should aim for) ---
@@ -43,7 +45,7 @@ def generate_recommendation_text(user_prompt: str, sound_results: List[Dict]) ->
 이 소리를 들으며, 마치 너른 들판에 누워 밤하늘을 보는 듯한 편안함에 몸을 맡겨보세요. 오늘 밤은 부디 푹 주무시길 바랄게요."
 ---
 
-Now, think step-by-step and then write the final recommendation for the user. Do not use awkward phrases like '의심스러운'. Ensure the entire response is in polite and natural Korean.
+Now, considering BOTH the user's immediate need AND their stated preference, write a balanced and thoughtful recommendation. If the top search results don't match their preference, you can acknowledge their preference and explain why other sounds might be better for their current, specific situation. Remember to write the entire response in polite and natural Korean.
 """
 
     # Llama 3 프롬프트 형식으로 변환하는 부분

@@ -15,11 +15,18 @@ def recommend(user_input: dict):
     # 3. LLM에게는 그 중에서도 가장 유사한 Top 3 정보만 전달
     top_3_for_llm = similar_sounds[:3]
 
+    # 사용자가 선호하는 소리도 같이 넘겨주기
+    user_preferences = {
+        "preferredSleepSound": user_input.get("preferredSleepSound"),
+        "calmingSoundType": user_input.get("calmingSoundType")
+    }
+
     final_recommendation_text = "" # fallback을 대비해 미리 변수 선언
     try:
         final_recommendation_text = generate_recommendation_text(
             user_prompt=prompt_for_rag, 
-            sound_results=top_3_for_llm
+            sound_results=top_3_for_llm,
+            user_preferences=user_preferences
         )
     except Exception as e:
         print(f"LLM generation failed: {e}. Falling back to default text.")
