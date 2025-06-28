@@ -33,12 +33,21 @@ def recommend(user_input: dict):
             f"오늘 밤, 이 소리들과 함께 편안한 시간을 보내시길 바래요."
         )
         final_recommendation_text = fallback_text
+    
+    # 반환할 사운드 목록
+    sounds_with_rank = []
+
+    # RAG가 찾아준 유사도 순서대로 번호 붙여주기
+    for i, sound_obj in enumerate(similar_sounds):
+        sound_obj['rank'] = i + 1
+        sound_obj['preference'] = 'none'
+        sounds_with_rank.append(sound_obj)
 
     # ▼▼▼ 3. [변경점 2] 프론트엔드에는 전체 목록(5개)을 전달! ▼▼▼
     # recommended_sounds에 파일명 리스트 대신, 사운드 객체 리스트 전체를 담아준다.
     response = {
         "recommendation_text": final_recommendation_text,
-        "recommended_sounds": similar_sounds # <-- 5개 전체 목록을 그대로 전달!
+        "recommended_sounds": sounds_with_rank # <-- 5개 전체 목록을 그대로 전달!
     }
     
     return response
