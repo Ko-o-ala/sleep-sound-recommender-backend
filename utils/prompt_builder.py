@@ -18,9 +18,9 @@ def build_prompt(user_input: Dict[str, any]) -> str:
     issues = user_input.get("issues", "최근 수면의 질이 낮음")
 
     return (
-        f"사용자는 '{goal}'을(를) 원하고, "
-        f"선호하는 사운드는 {', '.join(preference)}이며, "
-        f"최근 상태는 '{issues}'입니다."
+        f"A user whose goal is '{goal}'. "
+        f"Preferred sound categories are {', '.join(preference)}. "
+        f"The user's recent issue is '{issues}'."
     )
 
 if __name__ == "__main__":
