@@ -18,6 +18,45 @@ class UserRequest(BaseModel):
     issues: str = Field(..., example="요즘 스트레스가 많고 뒤척임이 심해요", description="사용자의 현재 문제점")
 """
 
+# 예시 데이터
+USER_SURVEY_EXAMPLE = {
+  "sleepLightUsage": "none",
+  "lightColorTemperature": "warmYellow",
+  "noisePreference": "nature",
+  "noisePreferenceOther": "",
+  "youtubeContentType": "none",
+  "youtubeContentTypeOther": "",
+  "usualBedtime": "12to2am",
+  "usualWakeupTime": "7to9am",
+  "dayActivityType": "outdoor",
+  "morningSunlightExposure": "daily",
+  "napFrequency": "none",
+  "napDuration": "none",
+  "mostDrowsyTime": "afternoon",
+  "averageSleepDuration": "4to6h",
+  "sleepIssues": [
+    "fallAsleepHard",
+    "wakeOften"
+  ],
+  "emotionalSleepInterference": [
+    "stress",
+    "anxiety"
+  ],
+  "emotionalSleepInterferenceOther": "",
+  "preferredSleepSound": "nature",
+  "calmingSoundType": "rain",
+  "calmingSoundTypeOther": "",
+  "sleepDevicesUsed": [],
+  "soundAutoOffType": "autoOff1hour",
+  "timeToFallAsleep": "over30min",
+  "caffeineIntakeLevel": "none",
+  "exerciseFrequency": "sometimes",
+  "screenTimeBeforeSleep": "30minTo1hour",
+  "stressLevel": "high",
+  "sleepGoal": "improveSleepQuality",
+  "preferredFeedbackFormat": "text"
+}
+
 # 메인서버의 UserSurveyDto 스키마 반영
 class UserSurveyDto(BaseModel):
     sleepLightUsage: Optional[str] = None
@@ -49,6 +88,18 @@ class UserSurveyDto(BaseModel):
     stressLevel: Optional[str] = None
     sleepGoal: Optional[str] = None
     preferredFeedbackFormat: Optional[str] = None
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    #"summary": "A user with high stress",
+                    #"description": "A realistic example of a user who needs help with sleep due to stress.",
+                    "value": USER_SURVEY_EXAMPLE # 위에서 만든 예시 데이터를 여기에 연결!
+                }
+            ]
+        }
+    }
 
 # API 엔드포인트
 @app.post("/recommend", summary="수면 사운드 추천")

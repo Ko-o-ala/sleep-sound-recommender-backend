@@ -13,39 +13,40 @@ MODEL_ID = "meta.llama3-8b-instruct-v1:0"
 
 # 비동기 처리는 일단 빼고 동기 버전으로 다시 작성 (boto3는 비동기 설정이 더 복잡해서)
 def generate_recommendation_text(user_prompt: str, sound_results: List[Dict], user_preferences: Dict) -> str:
-    
-    # --- 시스템 메시지: 이제 '종합적인 판단'을 하도록 역할을 수정! ---
     system_message = (
-        "You are a 'Sleep Therapist' who writes with deep empathy. Your goal is to write a warm, comforting essay. "
-        "You will be given the user's current needs, their stated long-term preferences, and a list of potentially relevant sounds. "
-        "Your task is to thoughtfully synthesize all this information. "
-        "Acknowledge both their current situation and their preferences, and then recommend one or two sounds from the list that best address the user's overall context. "
-        "**Your entire response must be written in gentle and natural Korean.**"
+        "You are a 'Sleep Therapist' who writes with deep empathy, like writing a warm, comforting essay for a close friend. "
+        "Your primary goal is to make the user feel understood and cared for. "
+        "You will be given a user's needs, their preferences, and a list of recommended sounds. "
+        "You must follow the provided reasoning steps precisely to write the final response in gentle, natural Korean."
+        "A very important rule: You must NEVER use the Korean word '소음' (noise). Instead, always use '사운드' (sound) or '소리' (sori)."
     )
     
     sound_list_text = "\n".join([
-        f"- Title: {sound['filename']}, Description: {sound['effect']}" for sound in sound_results
+        f"- Title: {sound['title']}, Description: {sound['effect']}" for sound in sound_results
     ])
     
-    # --- 최종 프롬프트: '사용자 선호도' 섹션을 명시적으로 추가! ---
-    final_prompt_for_user = f"""Based on all the following information, please write a warm and persuasive recommendation essay for the user.
+    # --- [최종 진화] LLM에게 '판단 규칙(Rules)'을 명시적으로 부여! ---
+    final_prompt_for_user = f"""First, think step-by-step by following these rules, and then write the final recommendation essay for the user.
+
+--- Your Reasoning Steps & Rules ---
+1.  Look at the `User's Stated Preference` and the `Top 3 Sounds list`.
+2.  **IF** a sound in the Top 3 list matches the user's preference category (e.g., user prefers 'nature' and a nature sound is in the list):
+    - **THEN** you MUST prioritize recommending that sound. Start your essay by acknowledging both the preference and the current need, like: "평소에 좋아하시는 OOO 소리가 마침 지금 상황에도 꼭 맞네요."
+3.  **IF** none of the Top 3 sounds match the user's preference category:
+    - **THEN** you must first acknowledge their preference, and then gently suggest that another sound might be better for their *current* specific need. Start your essay like: "평소 OOO 소리를 즐겨 들으시지만, 오늘은 특별히 이런 문제가 있으니, 가장 유사도가 높은 XXX 소리는 어떠신가요?"
+4.  After following these steps, write the final essay based on your conclusion.
 
 --- User's Current Need (deduced from survey) ---
 {user_prompt}
 
 --- User's Stated Preference (from survey) ---
-The user has explicitly stated they prefer '{user_preferences.get("preferredSleepSound")}' sounds and find '{user_preferences.get("calmingSoundType")}' sounds calming.
+The user has explicitly stated they prefer '{user_preferences.get("preferredSleepSound")}' sounds.
 
 --- Top 3 Sounds based on Similarity Search (from RAG) ---
 {sound_list_text}
-
---- Example of an excellent response (This is the style you should aim for) ---
-"요즘 스트레스가 많아 뒤척이는 밤이 많으셨군요. 그런 날에는 마음을 차분하게 다독여줄 자연의 소리가 큰 위로가 될 수 있어요. 
-특히 '밤 귀뚜라미 소리'가 들려주는 일정하고 평화로운 리듬은, 복잡한 생각의 고리를 끊고 마음을 고요하게 만드는 데 도움을 줄 거예요. 
-이 소리를 들으며, 마치 너른 들판에 누워 밤하늘을 보는 듯한 편안함에 몸을 맡겨보세요. 오늘 밤은 부디 푹 주무시길 바랄게요."
 ---
 
-Now, considering BOTH the user's immediate need AND their stated preference, write a balanced and thoughtful recommendation. If the top search results don't match their preference, you can acknowledge their preference and explain why other sounds might be better for their current, specific situation. Remember to write the entire response in polite and natural Korean.
+**이제, 위의 모든 규칙과 정보를 바탕으로, 최종 추천사를 아주 부드럽고 자연스러운 한국어로 작성해주세요:**
 """
 
     # Llama 3 프롬프트 형식으로 변환하는 부분
