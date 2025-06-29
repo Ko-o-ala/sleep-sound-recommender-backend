@@ -1,32 +1,36 @@
+# services/recommender.py
 from services.embedding_service import embed_text
 from utils.prompt_builder import build_prompt
 from services.rag_recommender import recommend_by_vector
 from services.llm_service import generate_recommendation_text
 
 def recommend(user_input: dict):
-    # 사용자 입력을 자연어 쿼리로 변환
+    # 1. RAG 검색용 쿼리 생성
     prompt_for_rag = build_prompt(user_input)
-
-    # 쿼리를 임베딩 벡터로 변환
     embedding = embed_text(prompt_for_rag)
 
-    # RAG로 유사한 사운드 검색
-    similar_sounds = recommend_by_vector(embedding)
+    # 2. FAISS를 통해 '유사도 순으로 정렬된 Top 5' 사운드 목록을 가져옴
+    similar_sounds = recommend_by_vector(embedding) # top_k 기본값이 5이므로 5개가 옴
 
+    # 3. LLM에게는 그 중에서도 가장 유사한 Top 3 정보만 전달
     top_3_for_llm = similar_sounds[:3]
 
+    # 사용자가 선호하는 소리도 같이 넘겨주기
+    user_preferences = {
+        "preferredSleepSound": user_input.get("preferredSleepSound"),
+        "calmingSoundType": user_input.get("calmingSoundType")
+    }
+
+    final_recommendation_text = "" # fallback을 대비해 미리 변수 선언
     try:
-        # 이제 5개가 아닌, 3개 목록만 LLM에게 전달!
         final_recommendation_text = generate_recommendation_text(
             user_prompt=prompt_for_rag, 
-            sound_results=top_3_for_llm # <-- top_3_for_llm 변수 사용
+            sound_results=top_3_for_llm,
+            user_preferences=user_preferences
         )
     except Exception as e:
         print(f"LLM generation failed: {e}. Falling back to default text.")
-        
-        # fallback 로직에서도 가장 유사한 사운드 1개의 이름만 보여주도록 수정
         sound_titles = similar_sounds[0]['filename'] if similar_sounds else "추천 사운드"
-        
         fallback_text = (
             f"당신의 현재 상황을 고려하여 몇 가지 사운드를 찾아봤어요. "
             f"'{sound_titles}' 같은 소리는 어떠신가요? "
@@ -34,20 +38,16 @@ def recommend(user_input: dict):
         )
         final_recommendation_text = fallback_text
     
-    # 반환할 사운드 목록
-    sounds_with_rank = []
-
-    # RAG가 찾아준 유사도 순서대로 번호 붙여주기
+    # 4. 프론트에 전달할 최종 목록 만들기
+    # RAG가 찾아준 유사도 순서(similar_sounds) 그대로, rank와 preference 필드만 추가
     for i, sound_obj in enumerate(similar_sounds):
-        sound_obj['rank'] = i + 1
+        sound_obj['rank'] = i + 1  # 랭킹은 1부터 시작
         sound_obj['preference'] = 'none'
-        sounds_with_rank.append(sound_obj)
 
-    # ▼▼▼ 3. [변경점 2] 프론트엔드에는 전체 목록(5개)을 전달! ▼▼▼
-    # recommended_sounds에 파일명 리스트 대신, 사운드 객체 리스트 전체를 담아준다.
+    # 5. 최종 응답 구성
     response = {
         "recommendation_text": final_recommendation_text,
-        "recommended_sounds": sounds_with_rank # <-- 5개 전체 목록을 그대로 전달!
+        "recommended_sounds": similar_sounds # rank와 preference가 추가된 5개 목록 전달
     }
     
     return response

@@ -2,76 +2,87 @@ import boto3
 import json
 from typing import List, Dict
 
-# 1. Bedrock 클라이언트 생성 (AWS CLI 설정 덕분에 키 정보 필요 없음!)
+# Bedrock 클라이언트 생성
 bedrock_runtime = boto3.client(
     service_name="bedrock-runtime",
-    region_name="us-east-1"  # 반드시 팀에서 사용하는 리전으로 설정!
+    region_name="us-east-1"
 )
 
-# 2. 사용할 Llama 3 모델 ID 지정
+# 사용할 모델 ID
 MODEL_ID = "meta.llama3-8b-instruct-v1:0"
 
-# 비동기 처리는 일단 빼고 동기 버전으로 다시 작성 (boto3는 비동기 설정이 더 복잡해서)
-def generate_recommendation_text(user_prompt: str, sound_results: List[Dict]) -> str:
-    # --- 1. 시스템 메시지 (페르소나)를 영어로 부여! ---
+def generate_recommendation_text(user_prompt: str, sound_results: List[Dict], user_preferences: Dict) -> str:
+    # ✅ System 메시지: 역할, 말투, 금지어 지시 포함
     system_message = (
-        "You are a 'Sleep Therapist' who writes with deep empathy for the user's tired mind, based on your knowledge of psychology and sleep science. "
-        "Your goal is to write a warm, comforting essay, not a dry, technical manual. "
-        "Follow these steps to structure your response: "
-        "1. Start by acknowledging the user's specific feelings and struggles to show empathy. "
-        "2. Choose the single best sound from the list that directly addresses the user's main problem. "
-        "3. Naturally connect the sound's effect to the user's problem and describe the comforting experience the user will have. "
-        "**Your entire response must be written in gentle, natural, and non-repetitive Korean.**"
+        "당신은 '수면 테라피스트'입니다.\n"
+        "사용자의 고민과 사운드 정보를 바탕으로, 따뜻하고 감성적인 위로가 담긴 한국어 추천사를 작성하세요.\n\n"
+        "규칙:\n"
+        "- 사용자에게 직접 대화하듯 부드럽고 따뜻하게 말하세요.\n"
+        "- '사용자님', '추천드립니다', '도와드리겠습니다' 같은 말투는 사용하지 마세요.\n"
+        "- '~효과적입니다', '~효과가 있습니다' 같은 설명식 말투도 피해주세요.\n"
+        "- 모든 문장은 부드럽고 감성적인 일상어로 작성하며, 마지막은 위로 또는 희망의 말로 마무리하세요."
     )
-    
-    sound_list_text = "\n".join([
-        f"- Title: {sound['filename']}, Description: {sound['effect']}" for sound in sound_results
-    ])
-    
-    # --- 2. 최종 프롬프트와 '좋은 답변의 예시'도 영어로 제공! ---
-    final_prompt_for_user = f"""Based on the user's situation and the provided sound list, please write a warm and persuasive recommendation essay for the user. Follow the thinking process outlined in the system message.
 
---- User's Status ---
+    # ✅ 추천 사운드 목록 구성
+    sound_list_text = "\n".join([
+        f"- 제목: {sound['title']}, 설명: {sound['effect']}" for sound in sound_results
+    ])
+
+    # ✅ 감성적 예시 답변
+    example_answer = (
+        "예시:\n"
+        "요즘 잠이 잘 오지 않아 힘드셨죠?\n"
+        "자연의 소리를 좋아하신다고 하셔서, 오늘은 마음을 편안하게 감싸줄 소리들을 준비했어요.\n\n"
+        "432Hz 알파파 음악은 조용히 긴장을 풀어주고, 굿나잇 로파이의 잔잔한 리듬은 지친 하루를 천천히 감싸 안아줍니다.\n"
+        "계곡물 흐름 소리는 마치 맑은 자연 속에 있는 듯, 당신의 마음을 한결 부드럽게 만들어줄 거예요.\n\n"
+        "오늘 밤, 이 소리들과 함께 조용히 숨을 고르며 깊은 쉼을 가져보세요.\n"
+        "내일 아침엔 조금 더 가벼운 마음으로 일어나시길 바라요."
+    )
+
+    # ✅ User Prompt 지시
+    final_prompt_for_user = f"""다음 정보를 참고하여, 따뜻하고 감성적인 수면 추천사를 작성해 주세요.
+
+[1단계] 사용자의 고민에 진심으로 공감하는 문장으로 시작하세요.  
+[2단계] 선호하는 사운드를 자연스럽게 언급하며 소개하세요.  
+[3단계] 추천 사운드 Top 3를 감성적으로 엮어 연결해 주세요.  
+[4단계] 마지막은 위로 또는 희망의 말로 마무리해 주세요.
+
+※ 설명체 말투 대신 감정과 분위기를 표현해 주세요.  
+※ “효과가 있습니다”, “추천드립니다”, “사용자님” 등은 사용하지 말아 주세요.  
+※ 모든 문장은 부드럽고 따뜻한 일상적 한국어로 구성해 주세요.
+
+--- 사용자 고민 ---
 {user_prompt}
 
---- Recommended Sound List ---
+--- 사용자의 선호 ---
+'{user_preferences.get("preferredSleepSound")}' 사운드를 좋아합니다.
+
+--- 추천 사운드 Top 3 ---
 {sound_list_text}
 
---- Example of an excellent response (This is the style you should aim for) ---
-"요즘 스트레스가 많아 뒤척이는 밤이 많으셨군요. 그런 날에는 마음을 차분하게 다독여줄 자연의 소리가 큰 위로가 될 수 있어요. 
-특히 '밤 귀뚜라미 소리'가 들려주는 일정하고 평화로운 리듬은, 복잡한 생각의 고리를 끊고 마음을 고요하게 만드는 데 도움을 줄 거예요. 
-이 소리를 들으며, 마치 너른 들판에 누워 밤하늘을 보는 듯한 편안함에 몸을 맡겨보세요. 오늘 밤은 부디 푹 주무시길 바랄게요."
----
-
-Now, think step-by-step and then write the final recommendation for the user. Do not use awkward phrases like '의심스러운'. Ensure the entire response is in polite and natural Korean.
+{example_answer}
 """
 
-    # Llama 3 프롬프트 형식으로 변환하는 부분
+    # ✅ Llama 3 프롬프트 포맷 구성
     prompt = f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-
 {system_message}<|eot_id|><|start_header_id|>user<|end_header_id|>
-
 {final_prompt_for_user}<|eot_id|><|start_header_id|>assistant<|end_header_id|>"""
 
-    # Bedrock API에 보낼 요청 본문(body) 생성
+    # API 요청 본문 구성
     body = json.dumps({
         "prompt": prompt,
         "max_gen_len": 512,
-        "temperature": 0.7,  
+        "temperature": 0.7,
     })
 
     try:
-        # Bedrock API 호출
         response = bedrock_runtime.invoke_model(
             body=body,
             modelId=MODEL_ID,
             accept="application/json",
             contentType="application/json"
         )
-        
-        # Bedrock 응답 결과 파싱
         response_body = json.loads(response.get("body").read())
-        
         return response_body.get("generation")
 
     except Exception as e:

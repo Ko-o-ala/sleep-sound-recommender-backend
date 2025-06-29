@@ -1,128 +1,149 @@
 [
-    {
-      "filename": "NATURE_wave_soft1.mp3",
-      "category": "자연 소리",
-      "tags": ["wave", "ocean", "natural", "relaxing"],
-      "effect": "잔잔한 파도 소리는 자연의 반복적인 리듬을 통해 정서적 안정감을 유도하며, 시각적 심상을 자극해 심리적 긴장을 완화해줍니다."
-    },
-    {
-      "filename": "NATURE_stream1.mp3",
-      "category": "자연 소리",
-      "tags": ["stream", "water", "nature", "calm"],
-      "effect": "계곡물 흐르는 소리는 청량한 수경 환경을 연상시키며, 집중을 분산시키고 심리적 이완을 돕는 데 효과적입니다."
-    },
-    {
-      "filename": "NATURE_morning_birds1.mp3",
-      "category": "자연 소리",
-      "tags": ["birds", "morning", "forest", "fresh"],
-      "effect": "아침의 새소리는 긍정적인 정서와 함께 상쾌한 기분을 유도하여, 스트레스 해소와 심리적 안정에 도움을 줍니다."
-    },
-    {
-      "filename": "NATURE_cricket_night1.mp3",
-      "category": "자연 소리",
-      "tags": ["crickets", "night", "nature", "insects"],
-      "effect": "밤에 들리는 귀뚜라미 소리는 일정한 패턴과 자연적인 소리로 정서적 고요함과 이완감을 제공해 수면을 유도합니다."
-    },
-    {
-      "filename": "NATURE_droplet_cave1.mp3",
-      "category": "자연 소리",
-      "tags": ["water", "droplet", "cave", "minimal"],
-      "effect": "동굴 속 물방울 소리는 조용하고 반복적인 자극으로 뇌파를 안정시키며 깊은 이완 상태를 유도합니다."
-    },
-    {
-      "filename": "PINK_wind_leaf1.mp3",
-      "category": "핑크노이즈",
-      "tags": ["wind", "leaves", "pink noise", "soothing"],
-      "effect": "나뭇잎 사이로 불어오는 바람소리는 저주파의 부드러운 반복으로 뇌파를 안정시키고 긴장을 완화해줍니다."
-    },
-    {
-      "filename": "PINK_rain_window1.mp3",
-      "category": "핑크노이즈",
-      "tags": ["rain", "window", "pink noise", "gentle"],
-      "effect": "창문을 열고 듣는 잔잔한 빗소리는 부드러운 저주파 리듬을 통해 수면 유도에 효과적인 안정감을 제공합니다."
-    },
-    {
-      "filename": "PINK_rain_thunder2.mp3",
-      "category": "핑크노이즈",
-      "tags": ["rain", "thunder", "pink noise", "deep"],
-      "effect": "거센 빗소리와 천둥 소리는 몰입감 있는 저음 리듬으로 외부 자극을 차단하고 안정된 수면 상태를 유도합니다."
-    },
-    {
-      "filename": "NOISE_white_basic1.mp3",
-      "category": "백색소음",
-      "tags": ["white noise", "masking", "neutral", "steady"],
-      "effect": "백색소음은 전 주파수 대역의 지속적인 음으로 주변 소음을 효과적으로 차단해 깊은 수면을 도와줍니다."
-    },
-    {
-      "filename": "NOISE_white_underwater2.mp3",
-      "category": "백색소음",
-      "tags": ["white noise", "underwater", "subtle", "ambient"],
-      "effect": "수중 백색소음은 부드러운 저음과 반복성으로 자극을 줄이고 수면 중 외부 소리에 대한 민감도를 낮춰줍니다."
-    },
-    {
-      "filename": "ASMR_page_turn1.mp3",
-      "category": "ASMR",
-      "tags": ["page", "turning", "paper", "repetitive"],
-      "effect": "책장을 넘기는 반복적인 소리는 촉각 유사 자극으로 뇌를 안정시키고 긴장을 풀어 수면을 돕습니다."
-    },
-    {
-      "filename": "ASMR_brushing1.mp3",
-      "category": "ASMR",
-      "tags": ["brushing", "hair", "gentle", "tingling"],
-      "effect": "머리카락을 빗는 부드러운 소리는 두피 자극을 연상시키며, 감각적으로 안정감을 주고 수면 상태로 유도합니다."
-    },
-    {
-      "filename": "ASMR_tapping1.mp3",
-      "category": "ASMR",
-      "tags": ["tapping", "fingers", "rhythm", "soothing"],
-      "effect": "손가락으로 가볍게 두드리는 소리는 리드미컬한 자극을 통해 긴장을 완화하고 잠들기 쉬운 상태로 만들어줍니다."
-    },
-    {
-      "filename": "ALPHA_432hz_first1.mp3",
-      "category": "알파 음악",
-      "tags": ["432hz", "alpha wave", "binaural", "healing"],
-      "effect": "432Hz의 알파파 음악은 뇌파를 안정된 상태로 유도하여 긴장 완화와 깊은 수면에 효과적입니다."
-    },
-    {
-      "filename": "ALPHA_432hz_second2.mp3",
-      "category": "알파 음악",
-      "tags": ["432hz", "alpha", "calming", "meditation"],
-      "effect": "부드럽고 반복적인 알파파 음악은 정신적 긴장을 완화하고 깊은 이완을 유도하여 수면에 도움을 줍니다."
-    },
-    {
-      "filename": "FIRE_campfire1.mp3",
-      "category": "벽난로/캠프파이어",
-      "tags": ["fire", "campfire", "crackling", "warmth"],
-      "effect": "모닥불이 타닥타닥 타는 소리는 따뜻한 환경에 있는 듯한 안정감을 제공하여 수면 전 긴장을 해소하는 데 효과적입니다."
-    },
-    {
-      "filename": "FIRE_birchfire2.mp3",
-      "category": "벽난로/캠프파이어",
-      "tags": ["fire", "birch", "soothing", "crackling"],
-      "effect": "자작나무가 타는 소리는 규칙적이고 부드러운 리듬으로 편안한 분위기를 조성해 잠들기 쉬운 상태를 만듭니다."
-    },
-    {
-      "filename": "LOFI_goodnight1.mp3",
-      "category": "로파이 비트",
-      "tags": ["lofi", "chill", "sleep", "night"],
-      "effect": "‘Good Night’ 로파이 음악은 반복적인 비트와 낮은 템포로 감정을 안정시키고 수면 전 뇌를 진정시키는 데 효과적입니다."
-    },
-    {
-      "filename": "LOFI_rainycity2.mp3",
-      "category": "로파이 비트",
-      "tags": ["lofi", "rain", "city", "calm"],
-      "effect": "비 내리는 도시 분위기의 로파이 음악은 차분한 분위기를 만들어 스트레스 완화와 수면 유도에 도움을 줍니다."
-    },
-    {
-      "filename": "MEDIT_templebell1.mp3",
-      "category": "명상 가이드 / 종소리",
-      "tags": ["temple", "bell", "meditation", "calming"],
-      "effect": "사찰의 풍경소리는 영적인 정서적 안정감을 유도하며, 고요한 분위기를 통해 마음을 다스리고 수면에 도움을 줍니다."
-    },
-    {
-      "filename": "MEDIT_meditationmusic2.mp3",
-      "category": "명상 가이드 / 종소리",
-      "tags": ["meditation", "ambient", "healing", "sleep"],
-      "effect": "명상 음악은 반복적이고 조용한 선율로 뇌파를 진정시키고 잠들기 전의 이완 상태를 자연스럽게 유도합니다."
-    }
-  ]
+  {
+    "filename": "NATURE_1_WATER.mp3",
+    "title": "계곡물 흐름",
+    "category": "자연 소리",
+    "tags": ["stream", "water", "nature", "calm"],
+    "effect": "계곡물 흐르는 소리는 청량한 수경 환경을 연상시키며, 집중을 분산시키고 심리적 이완을 돕는 데 효과적입니다."
+  },
+  {
+    "filename": "NATURE_2_MORNINGBIRDS.mp3",
+    "title": "아침 숲과 새소리",
+    "category": "자연 소리",
+    "tags": ["birds", "morning", "forest", "fresh"],
+    "effect": "아침의 새소리는 긍정적인 정서와 함께 상쾌한 기분을 유도하여, 스트레스 해소와 심리적 안정에 도움을 줍니다."
+  },
+  {
+    "filename": "NATURE_3_CRICKETS.mp3",
+    "title": "밤의 벌레소리",
+    "category": "자연 소리",
+    "tags": ["crickets", "night", "nature", "insects"],
+    "effect": "밤에 들리는 귀뚜라미 소리는 일정한 패턴과 자연적인 소리로 정서적 고요함과 이완감을 제공해 수면을 유도합니다."
+  },
+  {
+    "filename": "NATURE_4_CAVE_DROPLETS.mp3",
+    "title": "동굴 속 물방울",
+    "category": "자연 소리",
+    "tags": ["water", "droplet", "cave", "minimal"],
+    "effect": "동굴 속 물방울 소리는 조용하고 반복적인 자극으로 뇌파를 안정시키며 깊은 이완 상태를 유도합니다."
+  },
+  {
+    "filename": "PINK_1_WIND.mp3",
+    "title": "나뭇잎 바람소리",
+    "category": "핑크노이즈",
+    "tags": ["wind", "leaves", "pink noise", "soothing"],
+    "effect": "나뭇잎 사이로 불어오는 바람소리는 저주파의 부드러운 반복으로 뇌파를 안정시키고 긴장을 완화해줍니다."
+  },
+  {
+    "filename": "PINK_2_RAIN.mp3",
+    "title": "창문 밖 잔잔한 비",
+    "category": "핑크노이즈",
+    "tags": ["rain", "window", "pink noise", "gentle"],
+    "effect": "창문을 열고 듣는 잔잔한 빗소리는 부드러운 저주파 리듬을 통해 수면 유도에 효과적인 안정감을 제공합니다."
+  },
+  {
+    "filename": "PINK_3_RAIN_THUNDER.mp3",
+    "title": "천둥 동반한 비소리",
+    "category": "핑크노이즈",
+    "tags": ["rain", "thunder", "pink noise", "deep"],
+    "effect": "거센 빗소리와 천둥 소리는 몰입감 있는 저음 리듬으로 외부 자극을 차단하고 안정된 수면 상태를 유도합니다."
+  },
+  {
+    "filename": "PINK_4_WAVE.mp3",
+    "title": "잔잔한 파도",
+    "category": "자연 소리",
+    "tags": ["wave", "ocean", "natural", "relaxing"],
+    "effect": "잔잔한 파도 소리는 자연의 반복적인 리듬을 통해 정서적 안정감을 유도하며, 시각적 심상을 자극해 심리적 긴장을 완화해줍니다."
+  },
+  {
+    "filename": "WHITE_1.mp3",
+    "title": "기본 백색소음",
+    "category": "백색소음",
+    "tags": ["white noise", "masking", "neutral", "steady"],
+    "effect": "백색소음은 전 주파수 대역의 지속적인 음으로 주변 소음을 효과적으로 차단해 깊은 수면을 도와줍니다."
+  },
+  {
+    "filename": "WHITE_2_UNDERWATER.mp3",
+    "title": "수중 백색소음",
+    "category": "백색소음",
+    "tags": ["white noise", "underwater", "subtle", "ambient"],
+    "effect": "수중 백색소음은 부드러운 저음과 반복성으로 자극을 줄이고 수면 중 외부 소리에 대한 민감도를 낮춰줍니다."
+  },
+  {
+    "filename": "ASMR_1_BOOK.mp3",
+    "title": "책장 넘기는 소리",
+    "category": "ASMR",
+    "tags": ["page", "turning", "paper", "repetitive"],
+    "effect": "책장을 넘기는 반복적인 소리는 촉각 유사 자극으로 뇌를 안정시키고 긴장을 풀어 수면을 돕습니다."
+  },
+  {
+    "filename": "ASMR_2_HAIR.mp3",
+    "title": "머리카락 빗는 소리",
+    "category": "ASMR",
+    "tags": ["brushing", "hair", "gentle", "tingling"],
+    "effect": "머리카락을 빗는 부드러운 소리는 두피 자극을 연상시키며, 감각적으로 안정감을 주고 수면 상태로 유도합니다."
+  },
+  {
+    "filename": "ASMR_3_TAPPING.mp3",
+    "title": "손가락 두드림",
+    "category": "ASMR",
+    "tags": ["tapping", "fingers", "rhythm", "soothing"],
+    "effect": "손가락으로 가볍게 두드리는 소리는 리드미컬한 자극을 통해 긴장을 완화하고 잠들기 쉬운 상태로 만들어줍니다."
+  },
+  {
+    "filename": "ALPHA_1.mp3",
+    "title": "432Hz 알파파 음악 1",
+    "category": "알파 음악",
+    "tags": ["432hz", "alpha wave", "binaural", "healing"],
+    "effect": "432Hz의 알파파 음악은 뇌파를 안정된 상태로 유도하여 긴장 완화와 깊은 수면에 효과적입니다."
+  },
+  {
+    "filename": "ALPHA_2.mp3",
+    "title": "432Hz 알파파 음악 2",
+    "category": "알파 음악",
+    "tags": ["432hz", "alpha", "calming", "meditation"],
+    "effect": "부드럽고 반복적인 알파파 음악은 정신적 긴장을 완화하고 깊은 이완을 유도하여 수면에 도움을 줍니다."
+  },
+  {
+    "filename": "FIRE_1.mp3",
+    "title": "모닥불 소리",
+    "category": "벽난로/캠프파이어",
+    "tags": ["fire", "campfire", "crackling", "warmth"],
+    "effect": "모닥불이 타닥타닥 타는 소리는 따뜻한 환경에 있는 듯한 안정감을 제공하여 수면 전 긴장을 해소하는 데 효과적입니다."
+  },
+  {
+    "filename": "FIRE_2.mp3",
+    "title": "자작나무 타는 소리",
+    "category": "벽난로/캠프파이어",
+    "tags": ["fire", "birch", "soothing", "crackling"],
+    "effect": "자작나무가 타는 소리는 규칙적이고 부드러운 리듬으로 편안한 분위기를 조성해 잠들기 쉬운 상태를 만듭니다."
+  },
+  {
+    "filename": "LOFI_1.mp3",
+    "title": "굿나잇 로파이",
+    "category": "로파이 비트",
+    "tags": ["lofi", "chill", "sleep", "night"],
+    "effect": "‘Good Night’ 로파이 음악은 반복적인 비트와 낮은 템포로 감정을 안정시키고 수면 전 뇌를 진정시키는 데 효과적입니다."
+  },
+  {
+    "filename": "LOFI_2.mp3",
+    "title": "비 오는 도시 로파이",
+    "category": "로파이 비트",
+    "tags": ["lofi", "rain", "city", "calm"],
+    "effect": "비 내리는 도시 분위기의 로파이 음악은 차분한 분위기를 만들어 스트레스 완화와 수면 유도에 도움을 줍니다."
+  },
+  {
+    "filename": "MEDIT_1_TEMPLE.mp3",
+    "title": "사찰 풍경소리",
+    "category": "명상 가이드 / 종소리",
+    "tags": ["temple", "bell", "meditation", "calming"],
+    "effect": "사찰의 풍경소리는 영적인 정서적 안정감을 유도하며, 고요한 분위기를 통해 마음을 다스리고 수면에 도움을 줍니다."
+  },
+  {
+    "filename": "MEDIT_2_MUSIC.mp3",
+    "title": "명상 배경음",
+    "category": "명상 가이드 / 종소리",
+    "tags": ["meditation", "ambient", "healing", "sleep"],
+    "effect": "명상 음악은 반복적이고 조용한 선율로 뇌파를 진정시키고 잠들기 전의 이완 상태를 자연스럽게 유도합니다."
+  }
+]
