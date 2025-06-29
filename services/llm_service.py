@@ -88,3 +88,39 @@ def generate_recommendation_text(user_prompt: str, sound_results: List[Dict], us
     except Exception as e:
         print(f"Error calling Bedrock API: {e}")
         raise e
+
+# input이 한글로 들어온경우 번역해서 돌려주기
+def translate_korean_to_english(text: str) -> str:
+    """
+    Bedrock LLM을 사용해 주어진 한국어 텍스트를 영어로 번역한다.
+    """
+    if not text.strip(): # 비어있는 텍스트는 번역하지 않음
+        return ""
+
+    # 번역을 위한 간단하고 명확한 프롬프트
+    prompt = f"""<|begin_of_text|><|start_header_id|>user<|end_header_id|>
+
+Translate the following Korean text to English. Just give me the translated English words, nothing else.
+Korean: "{text}"
+English:<|eot_id|><|start_header_id|>assistant<|end_header_id|>"""
+
+    body = json.dumps({
+        "prompt": prompt,
+        "max_gen_len": 64, # 번역은 길 필요 없으니 짧게
+        "temperature": 0.1, # 사실 기반 번역이므로 온도는 낮게
+    })
+
+    try:
+        response = bedrock_runtime.invoke_model(
+            body=body,
+            modelId=MODEL_ID,
+            accept="application/json",
+            contentType="application/json"
+        )
+        response_body = json.loads(response.get("body").read())
+        translated_text = response_body.get("generation").strip()
+        print(f"DEBUG: Translated '{text}' -> '{translated_text}'")
+        return translated_text
+    except Exception as e:
+        print(f"Error during translation: {e}")
+        return text # 번역 실패 시 원본 텍스트 반환
