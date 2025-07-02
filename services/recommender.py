@@ -1,8 +1,9 @@
 # services/recommender.py
 from services.embedding_service import embed_text
-from utils.prompt_builder import build_prompt
+from utils.prompt_builder import build_prompt, build_sleep_prompt
 from services.rag_recommender import recommend_by_vector
 from services.llm_service import generate_recommendation_text
+from services.score_calculator import compute_final_scores
 
 def recommend(user_input: dict):
     # 1. RAG 검색용 쿼리 생성
@@ -51,3 +52,42 @@ def recommend(user_input: dict):
     }
     
     return response
+
+def recommend_with_sleep_data(user_input: dict):
+    # 1. 쿼리 생성 → 수면 상태 기반 자연어 쿼리
+    prompt_for_rag = build_sleep_prompt(user_input["current"])
+
+    # 2. 임베딩 + FAISS 검색
+    embedding = embed_text(prompt_for_rag)
+    similar_sounds = recommend_by_vector(embedding)
+
+    # 3. 점수 계산
+    scored = compute_final_scores(
+        candidates=similar_sounds,
+        preferred_ids=user_input["preferredSounds"],
+        effectiveness_input={
+            "prev_score": user_input["previous"]["sleepScore"],
+            "curr_score": user_input["current"]["sleepScore"],
+            "recommended": user_input["previousRecommendations"]
+        },
+        mode=user_input["preferenceMode"]
+    )
+
+    top3 = [s["sound"] for s in scored[:3]]
+
+    # 4. LLM 추천문 생성
+    text = generate_recommendation_text(
+        user_prompt=prompt_for_rag,
+        sound_results=top3,
+        user_preferences={"preferredSleepSound": user_input.get("preferredSounds", [None])[0]}
+    )
+
+    # 5. 최종 응답 구성
+    for i, (sound_obj, _) in enumerate(scored):
+        sound_obj["rank"] = i + 1
+        sound_obj["preference"] = "top" if sound_obj["id"] in user_input["preferredSounds"] else "none"
+
+    return {
+        "recommendation_text": text,
+        "recommended_sounds": [s["sound"] for s in scored]
+    }

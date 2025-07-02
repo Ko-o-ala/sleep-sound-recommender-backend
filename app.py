@@ -101,12 +101,27 @@ class UserSurveyDto(BaseModel):
         }
     }
 
+# 여기 백엔드랑 입력형식 맞추기
+class SleepDataDto(BaseModel):
+    userId: str
+    preferenceMode: Field(..., example="effectiveness", description="추천 기준: preference / effectiveness")
+    preferredSounds: List[str] = []
+    previous: Dict[str, any]
+    current: Dict[str, any]
+    previousRecommendations: List[str] = []
+
 # API 엔드포인트
 @app.post("/recommend", summary="수면 사운드 추천")
 def get_recommendation(request: UserSurveyDto) -> Dict:
     # 사용자 입력을 받아서 RAG, LLM을 통해 맞춤형 수면 사운드, 추천 멘트 반환
     user_input = request.dict()
     result = recommend(user_input)
+    return result
+
+@app.post("/recommend/sleep", summary="수면데이터 기반 추천")
+def get_sleep_based_recommendation(request: SleepDataDto) -> Dict:
+    from services.recommender import recommend_with_sleep_data
+    result = recommend_with_sleep_data(request.dict())
     return result
 
 # root 엔드포인트

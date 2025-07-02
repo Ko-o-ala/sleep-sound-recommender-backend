@@ -41,3 +41,26 @@ def build_prompt(user_survey: Dict[str, any]) -> str:
     final_prompt = "A user who " + " ".join(phrases)
     print(f"DEBUG: Generated RAG Query: {final_prompt}")
     return final_prompt
+
+def build_sleep_prompt(sleep_data: Dict) -> str:
+    deep = sleep_data.get("deepSleepDuration", 0)
+    rem = sleep_data.get("remSleepDuration", 0)
+    total = sleep_data.get("totalSleepDuration", 1)
+    awake = sleep_data.get("awakeDuration", 0)
+
+    deep_ratio = deep / total
+    rem_ratio = rem / total
+    awake_ratio = awake / total
+    score = sleep_data.get("sleepScore", 0)
+
+    summary = []
+    if deep_ratio < 0.15:
+        summary.append("The user had insufficient deep sleep.")
+    if rem_ratio < 0.2:
+        summary.append("REM sleep ratio was too low.")
+    if awake_ratio > 0.15:
+        summary.append("The user experienced frequent awakenings.")
+    if score < 70:
+        summary.append("Overall sleep quality was poor based on the score.")
+
+    return " ".join(summary) or "Overall sleep quality was within a healthy range."
