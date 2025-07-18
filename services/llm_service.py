@@ -2,17 +2,23 @@ import boto3
 import json
 from typing import List, Dict
 
-# Bedrock 클라이언트 생성
+# Bedrock 클라이언트 초기화
 bedrock_runtime = boto3.client(
     service_name="bedrock-runtime",
     region_name="us-east-1"
 )
 
-# 사용할 모델 ID
+# 사용할 모델 지정 (LLaMA3-8B Instruct)
 MODEL_ID = "meta.llama3-8b-instruct-v1:0"
 
+
 def generate_recommendation_text(user_prompt: str, sound_results: List[Dict], user_preferences: Dict) -> str:
-    # ✅ System 메시지: 역할, 말투, 금지어 지시 포함
+    """
+    사용자 상태 설명과 추천 사운드 정보를 바탕으로,
+    LLaMA3 모델에게 감성적인 한국어 추천 멘트를 요청하고 반환합니다.
+    """
+
+    # 시스템 역할 및 말투 규칙 지시
     system_message = (
         "당신은 '수면 테라피스트'입니다.\n"
         "사용자의 고민과 사운드 정보를 바탕으로, 따뜻하고 감성적인 위로가 담긴 한국어 추천사를 작성하세요.\n\n"
@@ -23,12 +29,12 @@ def generate_recommendation_text(user_prompt: str, sound_results: List[Dict], us
         "- 모든 문장은 부드럽고 감성적인 일상어로 작성하며, 마지막은 위로 또는 희망의 말로 마무리하세요."
     )
 
-    # ✅ 추천 사운드 목록 구성
+    # 추천된 사운드 리스트 → 텍스트로 정리
     sound_list_text = "\n".join([
         f"- 제목: {sound['title']}, 설명: {sound['effect']}" for sound in sound_results
     ])
 
-    # ✅ 감성적 예시 답변
+    # LLM에게 보여줄 예시 (few-shot 예제)
     example_answer = (
         "예시:\n"
         "요즘 잠이 잘 오지 않아 힘드셨죠?\n"
@@ -39,7 +45,7 @@ def generate_recommendation_text(user_prompt: str, sound_results: List[Dict], us
         "내일 아침엔 조금 더 가벼운 마음으로 일어나시길 바라요."
     )
 
-    # ✅ User Prompt 지시
+    # 사용자 입력 및 지시 포함한 최종 프롬프트 구성
     final_prompt_for_user = f"""다음 정보를 참고하여, 따뜻하고 감성적인 수면 추천사를 작성해 주세요.
 
 [1단계] 사용자의 고민에 진심으로 공감하는 문장으로 시작하세요.  
@@ -63,18 +69,19 @@ def generate_recommendation_text(user_prompt: str, sound_results: List[Dict], us
 {example_answer}
 """
 
-    # ✅ Llama 3 프롬프트 포맷 구성
+    # LLaMA3 입력 형식에 맞게 최종 프롬프트 구성
     prompt = f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 {system_message}<|eot_id|><|start_header_id|>user<|end_header_id|>
 {final_prompt_for_user}<|eot_id|><|start_header_id|>assistant<|end_header_id|>"""
 
-    # API 요청 본문 구성
+    # Bedrock API 요청 body 생성
     body = json.dumps({
         "prompt": prompt,
         "max_gen_len": 512,
         "temperature": 0.7,
     })
 
+    # Bedrock 모델 호출
     try:
         response = bedrock_runtime.invoke_model(
             body=body,
@@ -84,32 +91,36 @@ def generate_recommendation_text(user_prompt: str, sound_results: List[Dict], us
         )
         response_body = json.loads(response.get("body").read())
         return response_body.get("generation")
-
     except Exception as e:
         print(f"Error calling Bedrock API: {e}")
         raise e
 
-# input이 한글로 들어온경우 번역해서 돌려주기
+
+# --------------------------------------------
+# 한글 텍스트 → 영어 번역용 함수 (BGE 임베딩에 쓰임)
+# --------------------------------------------
 def translate_korean_to_english(text: str) -> str:
     """
     Bedrock LLM을 사용해 주어진 한국어 텍스트를 영어로 번역한다.
     """
-    if not text.strip(): # 비어있는 텍스트는 번역하지 않음
-        return ""
+    if not text.strip():
+        return ""  # 빈 텍스트는 바로 반환
 
-    # 번역을 위한 간단하고 명확한 프롬프트
+    # 번역용 간결한 프롬프트 생성
     prompt = f"""<|begin_of_text|><|start_header_id|>user<|end_header_id|>
 
 Translate the following Korean text to English. Just give me the translated English words, nothing else.
 Korean: "{text}"
 English:<|eot_id|><|start_header_id|>assistant<|end_header_id|>"""
 
+    # 요청 구성
     body = json.dumps({
         "prompt": prompt,
-        "max_gen_len": 64, # 번역은 길 필요 없으니 짧게
-        "temperature": 0.1, # 사실 기반 번역이므로 온도는 낮게
+        "max_gen_len": 64,
+        "temperature": 0.1,  
     })
 
+    # API 호출
     try:
         response = bedrock_runtime.invoke_model(
             body=body,
@@ -123,4 +134,4 @@ English:<|eot_id|><|start_header_id|>assistant<|end_header_id|>"""
         return translated_text
     except Exception as e:
         print(f"Error during translation: {e}")
-        return text # 번역 실패 시 원본 텍스트 반환
+        return text  # 실패 시 원본 그대로 반환
