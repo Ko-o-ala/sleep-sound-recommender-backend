@@ -1,11 +1,10 @@
+# prompt_builder.py
+
 from typing import Dict, List, Optional
 from services.llm_service import translate_korean_to_english
 
+# 설문 응답 데이터를 자연어 영어 문장으로 바꿔서 LLM에게 넘겨줄 프롬프트 생성
 def build_prompt(user_survey: Dict[str, any]) -> str:
-    """
-    설문조사 응답을 바탕으로 LLM에 전달할 영어 문장을 생성하는 함수.
-    한글이 포함된 응답은 번역 후 자연어 형태로 연결함.
-    """
     phrases = []
 
     # 1. 한글이 포함될 수 있는 기타 항목 추출 (값이 없을 경우 빈 문자열로 대체함)
@@ -39,33 +38,54 @@ def build_prompt(user_survey: Dict[str, any]) -> str:
     print(f"DEBUG: Generated RAG Query: {final_prompt}")
     return final_prompt
 
+# 상태 평가해서 프롬프트에 추가해주는 함수
+def evaluate_status(metric: float, thresholds: Dict[str, float]) -> str:
+    if metric >= thresholds["good"]:
+        return "good"
+    elif metric >= thresholds["warning"]:
+        return "warning"
+    else:
+        return "bad"
 
-def build_sleep_prompt(sleep_data: Dict) -> str:
-    """
-    수면 데이터를 기반으로 사용자의 상태를 요약하는 자연어 문장을 생성함.
-    기준 이하의 deep/REM 수면, 과도한 깨어있음, 낮은 수면 점수를 체크하여 문장화함.
-    """
-    # 1. 수면 비율 계산
-    deep = sleep_data.get("deepSleepDuration", 0)
-    rem = sleep_data.get("remSleepDuration", 0)
-    total = sleep_data.get("totalSleepDuration", 1)  
-    awake = sleep_data.get("awakeDuration", 0)
-
-    deep_ratio = deep / total
-    rem_ratio = rem / total
-    awake_ratio = awake / total
-    score = sleep_data.get("sleepScore", 0)
-
-    # 2. 상태 평가 조건에 따라 요약 문장 구성
+# 이전/현재의 수면 비율 데이터를 비교해 문장으로 수면 상태를 요약
+def build_sleep_prompt(previous: Dict, current: Dict) -> Dict:
     summary = []
-    if deep_ratio < 0.15:
-        summary.append("The user had insufficient deep sleep.")
-    if rem_ratio < 0.2:
-        summary.append("REM sleep ratio was too low.")
-    if awake_ratio > 0.15:
-        summary.append("The user experienced frequent awakenings.")
-    if score < 70:
-        summary.append("Overall sleep quality was poor based on the score.")
 
-    # 3. 이상 없을 경우 기본 문장
-    return " ".join(summary) or "Overall sleep quality was within a healthy range."
+    # 변화량 계산
+    deep_delta = round(current.get("deepSleepRatio", 0) - previous.get("deepSleepRatio", 0), 4)
+    rem_delta = round(current.get("remSleepRatio", 0) - previous.get("remSleepRatio", 0), 4)
+    awake_delta = round(current.get("awakeRatio", 0) - previous.get("awakeRatio", 0), 4)
+    score_delta = round(current.get("sleepScore", 0) - previous.get("sleepScore", 0), 1)
+
+    # 현재 상태에 대한 등급 평가
+    deep_level = evaluate_status(current.get("deepSleepRatio", 0), {"good": 0.20, "warning": 0.13})
+    rem_level = evaluate_status(current.get("remSleepRatio", 0), {"good": 0.22, "warning": 0.15})
+    awake_level = evaluate_status(current.get("awakeRatio", 0), {"good": 0.10, "warning": 0.15})
+    score_level = evaluate_status(current.get("sleepScore", 0), {"good": 80, "warning": 65})
+
+    # 자연어 요약 문장 구성
+    if rem_level == "bad":
+        summary.append("렘수면 부족")
+    if awake_level == "bad":
+        summary.append("잦은 각성")
+    if deep_level == "bad":
+        summary.append("깊은 수면 부족")
+    if score_level == "bad":
+        summary.append("전반적인 수면 질 저하")
+
+    summary_text = " 및 ".join(summary) + "이 관찰되었습니다." if summary else "수면 상태는 전반적으로 안정적입니다."
+
+    return {
+        "summary": summary_text,
+        "improvement": {
+            "score_delta": score_delta,
+            "deep_delta": deep_delta,
+            "awake_delta": awake_delta
+        },
+        "evaluation": {
+            "deep": deep_level,
+            "rem": rem_level,
+            "awake": awake_level,
+            "score": score_level
+        }
+    }

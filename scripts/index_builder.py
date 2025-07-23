@@ -1,3 +1,5 @@
+# index_builder.py
+
 import faiss
 import numpy as np
 import json
@@ -12,7 +14,7 @@ def build_faiss_index(sound_pool_path: str, index_path: str):
     # 각 사운드의 effect를 임베딩 벡터로 변환
     print("Generating embeddings for each sound...")
     embeddings = [generate_embedding(item['effect']) for item in sound_pool]
-    vectors = np.array(embeddings, dtype='float32')
+    vectors = np.array(embeddings, dtype='float32') # (N, 384) shape의 float32 배열
 
     # FAISS 인덱스 생성 및 저장
     print("Building FAISS index...")

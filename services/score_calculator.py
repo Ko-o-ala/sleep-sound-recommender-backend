@@ -1,3 +1,5 @@
+# score_calculator.py
+
 import numpy as np
 
 # 사용자의 사운드 선호 순위를 기반으로 softmax 가중치를 계산하는 함수

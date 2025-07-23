@@ -1,3 +1,5 @@
+# recommender.py
+
 from services.embedding_service import embed_text
 from utils.prompt_builder import build_prompt, build_sleep_prompt
 from services.rag_recommender import recommend_by_vector
@@ -12,7 +14,7 @@ def recommend(user_input: dict):
     prompt_for_rag = build_prompt(user_input)
     embedding = embed_text(prompt_for_rag)  # 쿼리를 벡터로 임베딩
 
-    # 2. FAISS로 유사한 사운드 Top 5 검색 (기본 top_k=5)
+    # 2. FAISS 유사도 반환
     similar_sounds = recommend_by_vector(embedding)
 
     # 3. LLM 추천 멘트를 위해 Top 3만 추림
@@ -24,7 +26,7 @@ def recommend(user_input: dict):
         "calmingSoundType": user_input.get("calmingSoundType")
     }
 
-    # 4. LLM 호출로 감성적인 추천 멘트 생성
+    # 4. LLM 호출로 추천 멘트 생성
     final_recommendation_text = ""
     try:
         final_recommendation_text = generate_recommendation_text(

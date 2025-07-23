@@ -1,6 +1,9 @@
+# llm_service.py
+# 프롬프트 엔지니어링
+
 import boto3
 import json
-from typing import List, Dict
+from typing import List, Dict, Union
 
 # Bedrock 클라이언트 초기화
 bedrock_runtime = boto3.client(
@@ -12,11 +15,22 @@ bedrock_runtime = boto3.client(
 MODEL_ID = "meta.llama3-8b-instruct-v1:0"
 
 
-def generate_recommendation_text(user_prompt: str, sound_results: List[Dict], user_preferences: Dict) -> str:
+def generate_recommendation_text(
+    user_prompt: Union[str, Dict],
+    sound_results: List[Dict],
+    user_preferences: Dict
+) -> str:
+    
     """
     사용자 상태 설명과 추천 사운드 정보를 바탕으로,
     LLaMA3 모델에게 감성적인 한국어 추천 멘트를 요청하고 반환합니다.
     """
+
+    # user_prompt가 딕셔너리라면 summary만 추출함
+    if isinstance(user_prompt, dict):
+        user_summary = user_prompt.get("summary", "")
+    else:
+        user_summary = user_prompt or ""
 
     # 시스템 역할 및 말투 규칙 지시
     system_message = (
@@ -58,7 +72,7 @@ def generate_recommendation_text(user_prompt: str, sound_results: List[Dict], us
 ※ 모든 문장은 부드럽고 따뜻한 일상적 한국어로 구성해 주세요.
 
 --- 사용자 고민 ---
-{user_prompt}
+{user_summary}
 
 --- 사용자의 선호 ---
 '{user_preferences.get("preferredSleepSound")}' 사운드를 좋아합니다.
@@ -108,7 +122,6 @@ def translate_korean_to_english(text: str) -> str:
 
     # 번역용 간결한 프롬프트 생성
     prompt = f"""<|begin_of_text|><|start_header_id|>user<|end_header_id|>
-
 Translate the following Korean text to English. Just give me the translated English words, nothing else.
 Korean: "{text}"
 English:<|eot_id|><|start_header_id|>assistant<|end_header_id|>"""
