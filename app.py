@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from services.recommender import recommend, recommend_with_sleep_data
 
 # FastAPI 애플리케이션 생성
@@ -90,8 +90,8 @@ class SleepDataDto(BaseModel):
     userId: str
     preferenceMode: str = Field(..., example="effectiveness", description="추천 기준: preference / effectiveness")
     preferredSounds: List[str] = []
-    previous: Dict[str, any]
-    current: Dict[str, any]
+    previous: Dict[str, Any]
+    current: Dict[str, Any]
     previousRecommendations: List[str] = []
 
 # API 엔드포인트 정의
