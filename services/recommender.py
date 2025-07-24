@@ -62,8 +62,8 @@ def recommend(user_input: dict):
 # ------------------------------
 def recommend_with_sleep_data(user_input: dict):
     # 1. 수면 상태를 바탕으로 자연어 요약 쿼리 생성
-    prompt_for_rag = build_sleep_prompt(user_input["current"])
-    embedding = embed_text(prompt_for_rag)
+    prompt_for_rag = build_sleep_prompt(user_input["previous"], user_input["current"])
+    embedding = embed_text(prompt_for_rag["summary"])
 
     # 2. FAISS로 후보 사운드 검색
     similar_sounds = recommend_by_vector(embedding)
