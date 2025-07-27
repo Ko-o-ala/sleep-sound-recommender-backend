@@ -34,25 +34,21 @@ def choose_weights(mode):
 
 # 후보 사운드 리스트에 대해 최종 점수 계산 후 정렬하는 메인 함수
 def compute_final_scores(candidates, preferred_ids, effectiveness_input, mode="effectiveness"):
+    print("[compute_final_scores] candidates (top 3):", [c.get('filename') for c in candidates[:3]])
     alpha, beta = choose_weights(mode)
-
-    # 선호도 및 효과성 보너스 계산
+    print(f"[compute_final_scores] alpha: {alpha}, beta: {beta}")
     pref_weights = softmax_rank_weights(preferred_ids)
+    print("[compute_final_scores] pref_weights:", pref_weights)
     eff_weights = compute_effectiveness(**effectiveness_input)
-
+    print("[compute_final_scores] eff_weights:", eff_weights)
     scored = []
     for sound in candidates:
         sid = sound["filename"]
-
-        # 개별 점수 구성 요소 가져오기
         base = sound.get("similarity_score", 0)
         pref = pref_weights.get(sid, 0)
         eff = eff_weights.get(sid, 0)
-
-        # 최종 점수 계산
         score = base + alpha * pref + beta * eff
-
-        # 구성 요소와 함께 점수 저장
+        print(f"[compute_final_scores] sound: {sid}, base: {base}, pref: {pref}, eff: {eff}, score: {score}")
         scored.append({
             "sound": sound,
             "score": score,
@@ -63,6 +59,5 @@ def compute_final_scores(candidates, preferred_ids, effectiveness_input, mode="e
                 "effectiveness": eff
             }
         })
-
-    # 점수 기준 내림차순 정렬
+    print("[compute_final_scores] scored (top 3):", [{"filename": s["sound"].get("filename"), "score": s["score"]} for s in scored[:3]])
     return sorted(scored, key=lambda x: x["score"], reverse=True)

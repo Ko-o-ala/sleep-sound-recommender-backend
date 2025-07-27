@@ -49,6 +49,8 @@ def evaluate_status(metric: float, thresholds: Dict[str, float]) -> str:
 
 # 이전/현재의 수면 비율 데이터를 비교해 문장으로 수면 상태를 요약
 def build_sleep_prompt(previous: Dict, current: Dict) -> Dict:
+    print("[build_sleep_prompt] previous:", previous)
+    print("[build_sleep_prompt] current:", current)
     summary = []
 
     # 변화량 계산
@@ -75,6 +77,7 @@ def build_sleep_prompt(previous: Dict, current: Dict) -> Dict:
 
     summary_text = " 및 ".join(summary) + "이 관찰되었습니다." if summary else "수면 상태는 전반적으로 안정적입니다."
 
+    print("[build_sleep_prompt] summary:", summary)
     return {
         "summary": summary_text,
         "improvement": {
