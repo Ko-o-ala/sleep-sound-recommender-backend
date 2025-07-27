@@ -1,27 +1,33 @@
-# services/recommender.py
+# recommender.py
+
 from services.embedding_service import embed_text
-from utils.prompt_builder import build_prompt
+from utils.prompt_builder import build_prompt, build_sleep_prompt
 from services.rag_recommender import recommend_by_vector
 from services.llm_service import generate_recommendation_text
+from services.score_calculator import compute_final_scores
 
+# ------------------------------
+# 1. 설문 기반 추천
+# ------------------------------
 def recommend(user_input: dict):
-    # 1. RAG 검색용 쿼리 생성
+    # 1. 사용자의 설문 응답 → 자연어 쿼리 생성
     prompt_for_rag = build_prompt(user_input)
-    embedding = embed_text(prompt_for_rag)
+    embedding = embed_text(prompt_for_rag)  # 쿼리를 벡터로 임베딩
 
-    # 2. FAISS를 통해 '유사도 순으로 정렬된 Top 5' 사운드 목록을 가져옴
-    similar_sounds = recommend_by_vector(embedding) # top_k 기본값이 5이므로 5개가 옴
+    # 2. FAISS 유사도 반환
+    similar_sounds = recommend_by_vector(embedding)
 
-    # 3. LLM에게는 그 중에서도 가장 유사한 Top 3 정보만 전달
+    # 3. LLM 추천 멘트를 위해 Top 3만 추림
     top_3_for_llm = similar_sounds[:3]
 
-    # 사용자가 선호하는 소리도 같이 넘겨주기
+    # 사용자의 사운드 취향 정보 전달
     user_preferences = {
         "preferredSleepSound": user_input.get("preferredSleepSound"),
         "calmingSoundType": user_input.get("calmingSoundType")
     }
 
-    final_recommendation_text = "" # fallback을 대비해 미리 변수 선언
+    # 4. LLM 호출로 추천 멘트 생성
+    final_recommendation_text = ""
     try:
         final_recommendation_text = generate_recommendation_text(
             user_prompt=prompt_for_rag, 
@@ -29,6 +35,7 @@ def recommend(user_input: dict):
             user_preferences=user_preferences
         )
     except Exception as e:
+        # 실패 시 fallback 멘트 생성
         print(f"LLM generation failed: {e}. Falling back to default text.")
         sound_titles = similar_sounds[0]['filename'] if similar_sounds else "추천 사운드"
         fallback_text = (
@@ -38,16 +45,54 @@ def recommend(user_input: dict):
         )
         final_recommendation_text = fallback_text
     
-    # 4. 프론트에 전달할 최종 목록 만들기
-    # RAG가 찾아준 유사도 순서(similar_sounds) 그대로, rank와 preference 필드만 추가
+    # 5. 응답을 위해 rank, preference 필드 추가
     for i, sound_obj in enumerate(similar_sounds):
-        sound_obj['rank'] = i + 1  # 랭킹은 1부터 시작
+        sound_obj['rank'] = i + 1
         sound_obj['preference'] = 'none'
 
-    # 5. 최종 응답 구성
-    response = {
+    # 6. 최종 응답 리턴
+    return {
         "recommendation_text": final_recommendation_text,
-        "recommended_sounds": similar_sounds # rank와 preference가 추가된 5개 목록 전달
+        "recommended_sounds": similar_sounds
     }
-    
-    return response
+
+
+# ------------------------------
+# 2. 수면 데이터 기반 추천
+# ------------------------------
+def recommend_with_sleep_data(user_input: dict):
+    print("[recommend_with_sleep_data] user_input:", user_input)
+    prompt_for_rag = build_sleep_prompt(user_input["previous"], user_input["current"])
+    print("[recommend_with_sleep_data] prompt_for_rag:", prompt_for_rag)
+    embedding = embed_text(prompt_for_rag["summary"])
+    print("[recommend_with_sleep_data] embedding shape:", getattr(embedding, 'shape', None))
+    similar_sounds = recommend_by_vector(embedding)
+    print(f"[recommend_with_sleep_data] similar_sounds (top 3): {[s.get('filename') for s in similar_sounds[:3]]}")
+    scored = compute_final_scores(
+        candidates=similar_sounds,
+        preferred_ids=user_input["preferredSounds"],
+        effectiveness_input={
+            "prev_score": user_input["previous"]["sleepScore"],
+            "curr_score": user_input["current"]["sleepScore"],
+            "main_sounds": user_input["previousRecommendations"][:1],  
+            "sub_sounds": user_input["previousRecommendations"][1:]    
+        },
+        mode=user_input["preferenceMode"]  # preference or effectiveness
+    )
+    print(f"[recommend_with_sleep_data] scored (top 3): {[{'filename': s['sound'].get('filename'), 'score': s['score']} for s in scored[:3]]}")
+    top3 = [s["sound"] for s in scored[:3]]
+    text = generate_recommendation_text(
+        user_prompt=prompt_for_rag,
+        sound_results=top3,
+        user_preferences={"preferredSleepSound": user_input.get("preferredSounds", [None])[0]}
+    )
+    print("[recommend_with_sleep_data] LLM text:", text)
+    for i, s in enumerate(scored):
+        s["sound"]["rank"] = i + 1
+        s["sound"]["preference"] = (
+            "top" if s["id"] in user_input["preferredSounds"] else "none"
+        )
+    return {
+        "recommendation_text": text,
+        "recommended_sounds": [s["sound"] for s in scored]
+    }

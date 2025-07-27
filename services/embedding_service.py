@@ -1,3 +1,5 @@
+# embedding_service.py
+
 import numpy as np
 from scripts.embed_generator import generate_embedding
 
