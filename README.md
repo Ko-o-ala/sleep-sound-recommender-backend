@@ -1,128 +1,225 @@
 # Sleep Sound Recommendation Engine
 
-수면 개선을 위한 맞춤형 사운드를 추천해주는 FastAPI 기반 추천 서버입니다.  
-LLM 기반 사용자 요약 + 벡터 임베딩 + FAISS 유사도 검색을 통해 RAG 구조로 작동하며,  
-Bedrock 없이도 로컬에서 전체 파이프라인을 실행할 수 있도록 설계되었습니다.
-
----
+사용자의 수면 데이터와 설문조사 데이터를 기반으로 맞춤형 수면 사운드를 추천하는 FastAPI 기반 추천 서버입니다.
 
 ## 프로젝트 개요
 
 - **목표**: 사용자의 수면 상태, 선호 사운드, 목표 등을 바탕으로 최적의 수면 사운드를 추천
 - **기술 스택**: Python, FastAPI, Uvicorn, Pydantic, Sentence-Transformers, FAISS, OpenAI
-- **구조 요약**:
-  1. 사용자 입력 (JSON) 수신 (FastAPI, Pydantic)
-  2. 자연어 쿼리 생성
-  3. 쿼리 임베딩 벡터 변환 (Sentence-Transformers)
-  4. FAISS를 통한 유사도 기반 추천
-  5. 검색 결과와 사용자 입력을 바탕으로 최종 추천사 생성 (OpenAI)
-  6. 추천사와 사운드 목록 반환 (JSON)
-
----
+- **주요 기능**:
+  - 설문조사 데이터 기반 추천
+  - 수면 데이터 기반 추천
+  - 통합 데이터 기반 추천
+  - 메인 서버와의 자동 연동
+  - RAG(Retrieval-Augmented Generation) 기반 추천 시스템
 
 ## 개발 환경 설정 및 실행
-### 설정 방법
-clone 해주기
+
+### 1. 프로젝트 클론
 ```bash
-git clone
+git clone <repository-url>
 cd python-engine
 ```
 
-가상환경 생성
+### 2. 가상환경 생성 및 활성화
 ```bash
+# 가상환경 생성
 python3 -m venv venv
-```
 
-가상환경 활성화
-```bash
+# 가상환경 활성화 (macOS/Linux)
 source venv/bin/activate
-(윈도우는 아래)
+
+# 가상환경 활성화 (Windows)
 .\venv\Scripts\activate
 ```
 
-의존성 라이브러리 설치
+### 3. 의존성 라이브러리 설치
 ```bash
 pip install -r requirements.txt
 ```
 
-환경 변수 설정 (API 키)
-최상위 경로에 .env 파일 생성하고 아래 내용 추가
-(담당자에게 문의해주세오)
+### 4. 환경 변수 설정
+프로젝트 루트에 `.env` 파일을 생성하고 다음 내용을 추가:
+
 ```bash
-OPENAI_API_KEY=""
+# 메인 서버 설정
+MAIN_SERVER_URL=https://kooala.tassoo.uk
+MAIN_SERVER_API_KEY=your_api_key_here
+
+# OpenAI API 키
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-### 실행 방법
-데이터베이스 인덱스 생성
-sound_pool.json에 사운드 데이터를 추가/수정한 경우
-아래 스크립트를 실행해 검색용 인덱스를 새로 만들어줘야 함
+### 5. 데이터베이스 인덱스 생성
+사운드 데이터를 추가/수정한 경우 검색용 인덱스를 새로 생성:
+
 ```bash
 python3 scripts/index_builder.py
 ```
 
-FastAPI로 구현된 추천 서버 실행
+### 6. 서버 실행
 ```bash
-uvicorn app:app --reload
+uvicorn app:app --reload --host 0.0.0.0 --port 8000
 ```
-서버가 성공적으로 실행되면 브라우저에서 http://127.0.0.1:8000/docs 로 접속해 API 문서 확인 가능
 
----
+서버가 성공적으로 실행되면 브라우저에서 `http://localhost:8000/docs`로 접속하여 API 문서를 확인할 수 있습니다.
+
+## API 엔드포인트
+
+### 설문 데이터 기반 추천
+- **POST** `/recommend` - 설문조사 데이터를 직접 전송하여 추천
+
+### 수면 데이터 기반 추천
+- **POST** `/recommend/sleep` - 수면 데이터를 직접 전송하여 추천
+
+### 통합 추천
+- **POST** `/recommend/combined` - 수면 데이터와 설문 데이터를 모두 전송하여 추천
+
+### 자동 데이터 가져오기 (메인 서버 연동)
+- **GET** `/recommend/auto/{user_id}` - 사용자 ID만으로 메인 서버에서 데이터를 자동으로 가져와서 통합 추천
+- **GET** `/recommend/sleep-auto/{user_id}` - 사용자 ID만으로 수면 데이터를 가져와서 추천
+- **GET** `/recommend/survey-auto/{user_id}` - 사용자 ID만으로 설문 데이터를 가져와서 추천
+- **GET** `/recommend/simple/{user_id}` - 간단한 추천 (userId만으로)
+
+### 메인 서버에서 데이터 수신
+- **POST** `/recommend/receive` - 메인 서버가 보낸 데이터를 받아서 추천
 
 ## 폴더 구조
 
 ```
-PYTHON-ENGINE/
+python-engine/
 │
-├── .env                        # API 키 등 환경 변수 파일 (Git에서 무시됨)
+├── .env                        # 환경 변수 파일 (Git에서 무시됨)
 ├── .gitignore
 ├── app.py                      # FastAPI 서버 진입점
 ├── README.md
 ├── requirements.txt
 │
 ├── data/                       # 사운드 데이터 및 인덱스 저장소
-│   ├── sound_pool.json
-│   └── sound_index.faiss
+│   ├── sound_pool.json        # 사운드 데이터베이스
+│   ├── sound_pool_embedded.json
+│   └── sound_index.faiss      # FAISS 검색 인덱스
 │
-├── scripts/                    # DB 인덱싱 등 일회성 스크립트
-│   ├── embed_generator.py
-│   └── index_builder.py
+├── scripts/                    # 일회성 스크립트
+│   ├── embed_generator.py     # 임베딩 생성 스크립트
+│   └── index_builder.py       # FAISS 인덱스 빌더
 │
 ├── services/                   # 핵심 비즈니스 로직
-│   ├── embedding_service.py
-│   ├── llm_service.py          # LLM 연동 서비스
-│   ├── rag_recommender.py
-│   └── recommender.py
+│   ├── data_fetcher.py        # 메인 서버 데이터 가져오기
+│   ├── embedding_service.py   # 텍스트 임베딩 서비스
+│   ├── llm_service.py         # LLM 연동 서비스
+│   ├── rag_recommender.py     # RAG 추천 엔진
+│   ├── recommender.py         # 추천 메인 로직
+│   └── score_calculator.py    # 점수 계산 로직
 │
 ├── utils/                      # 보조 유틸리티
-│   └── prompt_builder.py
+│   └── prompt_builder.py      # 프롬프트 생성 유틸리티
 │
 └── venv/                       # 파이썬 가상환경 폴더 (Git에서 무시됨)
 ```
 
----
+## API 사용 예시
 
-## 테스트 예시 (POST 요청)
+### 1. 설문 데이터 기반 추천
 
-### 요청 형식
-
-```json
+```bash
 POST /recommend
 
 {
-  "goal": "빠르게 잠들고 싶어요",
-  "preference": ["자연", "로파이"],
-  "issues": "요즘 스트레스가 많고 뒤척임이 심해요"
+  "sleepLightUsage": "moodLight",
+  "lightColorTemperature": "warmYellow",
+  "noisePreference": "nature",
+  "preferredSleepSound": "nature",
+  "calmingSoundType": "rain",
+  "stressLevel": "high",
+  "sleepGoal": "improveSleepQuality"
 }
+```
+
+### 2. 수면 데이터 기반 추천
+
+```bash
+POST /recommend/sleep
+
+{
+  "userId": "user123",
+  "preferenceMode": "effectiveness",
+  "preferredSounds": ["NATURE_1_WATER.mp3"],
+  "previous": {
+    "sleepScore": 68,
+    "deepSleepRatio": 0.12,
+    "remSleepRatio": 0.14,
+    "awakeRatio": 0.18
+  },
+  "current": {
+    "sleepScore": 75,
+    "deepSleepRatio": 0.17,
+    "remSleepRatio": 0.19,
+    "awakeRatio": 0.13
+  },
+  "previousRecommendations": ["ASMR_2_HAIR.mp3", "FIRE_2.mp3"]
+}
+```
+
+### 3. 자동 데이터 가져오기
+
+```bash
+GET /recommend/auto/user123?preference_mode=effectiveness
 ```
 
 ### 응답 예시
 
 ```json
 {
-  "recommendation_text": "오늘 스트레스가 많고 뒤척임이 심하셨군요. 이런 날에는 마음을 차분하게 가라앉혀주는 '여름밤 귀뚜라미 소리'가 도움이 될 수 있어요. 조용한 시골 밤에 들리는 귀뚜라미들의 합창은 복잡한 생각을 잊고 편안하게 잠드는 데 좋은 친구가 되어줄 거예요.",
+  "recommendation_text": "당신의 수면 패턴을 분석한 결과, 깊은 수면이 부족한 것으로 보입니다. 이런 경우에는 마음을 차분하게 가라앉혀주는 자연의 소리가 도움이 될 수 있어요. 특히 '여름밤 귀뚜라미 소리'는 복잡한 생각을 잊고 편안하게 잠드는 데 좋은 친구가 되어줄 거예요.",
   "recommended_sounds": [
-    "N001",
-    "W001"
+    {
+      "filename": "NATURE_1_WATER.mp3",
+      "rank": 1,
+      "preference": "none"
+    },
+    {
+      "filename": "ASMR_2_HAIR.mp3", 
+      "rank": 2,
+      "preference": "top"
+    }
   ]
 }
 ```
+
+## 주요 기능
+
+### 1. RAG 기반 추천 시스템
+- 사용자 입력을 자연어로 변환
+- Sentence-Transformers를 사용한 벡터 임베딩
+- FAISS를 통한 유사도 기반 검색
+- OpenAI를 사용한 개인화된 추천 텍스트 생성
+
+### 2. 메인 서버 연동
+- 수면 데이터 자동 가져오기 (`/sleep-data/user/{userID}/last`)
+- 설문조사 데이터 자동 가져오기 (`/users/survey/{userID}/result`)
+- 병렬 데이터 처리로 성능 최적화
+
+### 3. 다양한 추천 모드
+- **preference**: 사용자 선호도 기반 추천
+- **effectiveness**: 수면 개선 효과 기반 추천
+
+### 4. 에러 처리 및 로깅
+- 네트워크 오류 처리
+- API 키 인증 실패 처리
+- 상세한 로깅으로 디버깅 지원
+
+## 환경 변수
+
+| 변수명 | 설명 | 필수 여부 |
+|--------|------|-----------|
+| `MAIN_SERVER_URL` | 메인 서버 URL | 선택 (기본값: https://kooala.tassoo.uk) |
+| `MAIN_SERVER_API_KEY` | 메인 서버 API 키 | 필수 |
+| `OPENAI_API_KEY` | OpenAI API 키 | 필수 |
+
+## 개발 참고사항
+
+- API 키가 설정되지 않은 경우 더미 데이터로 테스트 가능
+- 메인 서버와의 연동 실패 시 적절한 에러 메시지 반환
+- 모든 API 엔드포인트는 Swagger UI에서 테스트 가능
+- 비동기 처리로 성능 최적화
