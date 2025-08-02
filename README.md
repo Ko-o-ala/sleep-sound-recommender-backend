@@ -10,7 +10,7 @@
   - 설문조사 데이터 기반 추천
   - 수면 데이터 기반 추천
   - 통합 데이터 기반 추천
-  - 메인 서버와의 자동 연동
+  - 메인 서버와의 직접 연동
   - RAG(Retrieval-Augmented Generation) 기반 추천 시스템
 
 ## 개발 환경 설정 및 실행
@@ -66,23 +66,16 @@ uvicorn app:app --reload --host 0.0.0.0 --port 8000
 
 ## API 엔드포인트
 
-### 설문 데이터 기반 추천
+### 추천 서비스
 - **POST** `/recommend` - 설문조사 데이터를 직접 전송하여 추천
-
-### 수면 데이터 기반 추천
 - **POST** `/recommend/sleep` - 수면 데이터를 직접 전송하여 추천
-
-### 통합 추천
 - **POST** `/recommend/combined` - 수면 데이터와 설문 데이터를 모두 전송하여 추천
 
-### 자동 데이터 가져오기 (메인 서버 연동)
-- **GET** `/recommend/auto/{user_id}` - 사용자 ID만으로 메인 서버에서 데이터를 자동으로 가져와서 통합 추천
-- **GET** `/recommend/sleep-auto/{user_id}` - 사용자 ID만으로 수면 데이터를 가져와서 추천
-- **GET** `/recommend/survey-auto/{user_id}` - 사용자 ID만으로 설문 데이터를 가져와서 추천
-- **GET** `/recommend/simple/{user_id}` - 간단한 추천 (userId만으로)
+### 메인 서버 연동
+- **POST** `/recommend/receive` - 메인 서버에서 데이터를 받아서 추천
 
-### 메인 서버에서 데이터 수신
-- **POST** `/recommend/receive` - 메인 서버가 보낸 데이터를 받아서 추천
+### 시스템
+- **GET** `/` - 서버 상태 확인
 
 ## 폴더 구조
 
@@ -161,10 +154,24 @@ POST /recommend/sleep
 }
 ```
 
-### 3. 자동 데이터 가져오기
+### 3. 통합 추천
 
 ```bash
-GET /recommend/auto/user123?preference_mode=effectiveness
+POST /recommend/combined
+
+{
+  "userId": "user123",
+  "preferenceMode": "effectiveness",
+  "preferredSounds": ["NATURE_1_WATER.mp3"],
+  "previous": {...},
+  "current": {...},
+  "previousRecommendations": [...],
+  "sleepLightUsage": "moodLight",
+  "noisePreference": "nature",
+  "preferredSleepSound": "nature",
+  "stressLevel": "high",
+  "sleepGoal": "improveSleepQuality"
+}
 ```
 
 ### 응답 예시
@@ -196,9 +203,9 @@ GET /recommend/auto/user123?preference_mode=effectiveness
 - OpenAI를 사용한 개인화된 추천 텍스트 생성
 
 ### 2. 메인 서버 연동
-- 수면 데이터 자동 가져오기 (`/sleep-data/user/{userID}/last`)
-- 설문조사 데이터 자동 가져오기 (`/users/survey/{userID}/result`)
-- 병렬 데이터 처리로 성능 최적화
+- 메인 서버에서 데이터를 직접 전송받아 처리
+- 데이터가 도착했을 때만 추천을 수행하는 구조
+- 메인 서버가 데이터를 수집하여 추천 서버에 POST
 
 ### 3. 다양한 추천 모드
 - **preference**: 사용자 선호도 기반 추천
@@ -219,7 +226,8 @@ GET /recommend/auto/user123?preference_mode=effectiveness
 
 ## 개발 참고사항
 
-- API 키가 설정되지 않은 경우 더미 데이터로 테스트 가능
-- 메인 서버와의 연동 실패 시 적절한 에러 메시지 반환
+- **중요**: 이 API는 데이터가 도착했을 때만 추천을 수행합니다
+- 자동 데이터 가져오기 기능은 제공하지 않습니다
+- 메인 서버가 데이터를 모아서 추천 서버에 POST해야 합니다
 - 모든 API 엔드포인트는 Swagger UI에서 테스트 가능
 - 비동기 처리로 성능 최적화

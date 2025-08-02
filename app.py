@@ -44,11 +44,16 @@ app = FastAPI(
     • 설문 데이터 기반 추천: 사용자 설문조사 결과를 바탕으로 추천
     • 수면 데이터 기반 추천: 수면 패턴 분석을 통한 추천  
     • 통합 추천: 설문과 수면 데이터를 모두 활용한 추천
-    • 자동 데이터 가져오기: 메인 서버에서 데이터를 자동으로 가져와 추천
+    • 메인 서버 연동: 메인 서버에서 데이터를 직접 전송받아 추천
 
     사용 방법:
-    1. 직접 데이터 전송: POST 엔드포인트로 데이터를 직접 전송
-    2. 자동 데이터 가져오기: GET 엔드포인트로 사용자 ID만 전송
+    • POST 엔드포인트로 데이터를 직접 전송하여 추천 받기
+    • 메인 서버가 데이터를 수집하여 추천 서버에 전송하는 구조
+
+    주의사항:
+    • 이 API는 데이터가 도착했을 때만 추천을 수행합니다
+    • 자동 데이터 가져오기 기능은 제공하지 않습니다
+    • 메인 서버가 데이터를 모아서 추천 서버에 POST해야 합니다
     """,
     version="1.0.0"
 )
@@ -217,7 +222,7 @@ class CombinedDataDto(BaseModel):
 # API 엔드포인트 정의
 @app.post(
     "/recommend", 
-    tags=["직접 데이터 추천"],
+    tags=["추천 서비스"],
     summary="설문 기반 수면 사운드 추천",
     description="""
     사용자의 설문조사 데이터를 직접 전송받아 수면 사운드를 추천합니다.
@@ -243,7 +248,7 @@ def get_recommendation(request: UserSurveyDto) -> Dict:
 
 @app.post(
     "/recommend/sleep", 
-    tags=["직접 데이터 추천"],
+    tags=["추천 서비스"],
     summary="수면 데이터 기반 수면 사운드 추천",
     description="""
     사용자의 수면 데이터를 직접 전송받아 수면 사운드를 추천합니다.
@@ -268,7 +273,7 @@ def get_sleep_based_recommendation(request: SleepDataDto) -> Dict:
 
 @app.post(
     "/recommend/combined", 
-    tags=["직접 데이터 추천"],
+    tags=["추천 서비스"],
     summary="수면 데이터 + 설문 데이터 기반 통합 추천",
     description="""
     수면 데이터와 설문 데이터를 모두 전송받아 통합적으로 수면 사운드를 추천합니다.
@@ -290,212 +295,6 @@ def get_combined_recommendation(request: CombinedDataDto) -> Dict:
         통합 분석 기반 추천 텍스트와 추천 사운드 목록
     """
     return recommend_with_both_data(request.dict())
-
-# 자동 데이터 가져오기 엔드포인트들
-@app.get(
-    "/recommend/auto/{user_id}", 
-    tags=["자동 데이터 추천"],
-    summary="사용자 ID로 자동 데이터 가져와서 추천",
-    description="""
-    사용자 ID만으로 메인 서버에서 수면 데이터와 설문 데이터를 자동으로 가져와서 통합 추천을 제공합니다.
-    
-    사용 시나리오: 클라이언트가 사용자 ID만 가지고 있고, 메인 서버에 데이터가 저장되어 있는 경우
-    동작 과정:
-    1. 메인 서버에서 수면 데이터 가져오기 (<code>/sleep-data/user/{userID}/last</code>)
-    2. 메인 서버에서 설문 데이터 가져오기 (<code>/users/survey/{userID}/result</code>)
-    3. 두 데이터를 통합하여 추천 알고리즘 실행
-    4. 개인화된 추천 결과 반환
-    
-    장점: 클라이언트는 사용자 ID만 제공하면 되고, 복잡한 데이터 통합은 서버에서 처리
-    """,
-    response_model=RecommendResponse
-)
-async def get_auto_recommendation(
-    user_id: str = Path(..., description="추천할 사용자의 고유 ID"),
-    preference_mode: str = Query("effectiveness", description="추천 기준 모드 (preference/effectiveness)")
-) -> Dict:
-    """
-    사용자 ID만으로 메인 서버에서 데이터를 자동으로 가져와서 추천합니다.
-    
-    Args:
-        user_id: 사용자 고유 ID
-        preference_mode: 추천 기준 (preference: 선호도 기반, effectiveness: 효과성 기반)
-        
-    Returns:
-        메인 서버 데이터 기반 통합 추천 결과
-    """
-    try:
-        # 메인 서버에서 통합 데이터 가져오기
-        combined_data = await data_fetcher.fetch_combined_data(user_id)
-        
-        # preference_mode 추가
-        combined_data["preferenceMode"] = preference_mode
-        
-        # 기본값 설정 (데이터가 없는 경우)
-        if "preferredSounds" not in combined_data:
-            combined_data["preferredSounds"] = []
-        if "previousRecommendations" not in combined_data:
-            combined_data["previousRecommendations"] = []
-        
-        # 통합 추천 실행
-        return recommend_with_both_data(combined_data)
-        
-    except Exception as e:
-        print(f"[Auto Recommendation] Error: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to get auto recommendation: {str(e)}"
-        )
-
-@app.get(
-    "/recommend/sleep-auto/{user_id}", 
-    tags=["자동 데이터 추천"],
-    summary="사용자 ID로 수면 데이터만 가져와서 추천",
-    description="""
-    사용자 ID만으로 메인 서버에서 수면 데이터를 자동으로 가져와서 추천을 제공합니다.
-    
-    사용 시나리오: 수면 데이터만 필요하고 설문 데이터는 없는 경우
-    동작 과정:
-    1. 메인 서버에서 수면 데이터 가져오기 (<code>/sleep-data/user/{userID}/last</code>)
-    2. 수면 패턴 분석을 통한 추천 알고리즘 실행
-    3. 수면 개선 효과 기반 추천 결과 반환
-    
-    특징: 수면 데이터의 객관적 지표를 기반으로 한 과학적 추천
-    """,
-    response_model=RecommendResponse
-)
-async def get_sleep_auto_recommendation(
-    user_id: str = Path(..., description="추천할 사용자의 고유 ID"),
-    preference_mode: str = Query("effectiveness", description="추천 기준 모드 (preference/effectiveness)")
-) -> Dict:
-    """
-    사용자 ID만으로 메인 서버에서 수면 데이터를 자동으로 가져와서 추천합니다.
-    
-    Args:
-        user_id: 사용자 고유 ID
-        preference_mode: 추천 기준 (preference: 선호도 기반, effectiveness: 효과성 기반)
-        
-    Returns:
-        수면 데이터 기반 추천 결과
-    """
-    try:
-        # 메인 서버에서 수면 데이터 가져오기
-        sleep_data = await data_fetcher.fetch_sleep_data(user_id)
-        
-        # preference_mode 추가
-        sleep_data["preferenceMode"] = preference_mode
-        
-        # 기본값 설정
-        if "preferredSounds" not in sleep_data:
-            sleep_data["preferredSounds"] = []
-        if "previousRecommendations" not in sleep_data:
-            sleep_data["previousRecommendations"] = []
-        
-        # 수면 데이터 기반 추천 실행
-        return recommend_with_sleep_data(sleep_data)
-        
-    except Exception as e:
-        print(f"[Sleep Auto Recommendation] Error: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to get sleep auto recommendation: {str(e)}"
-        )
-
-@app.get(
-    "/recommend/survey-auto/{user_id}", 
-    tags=["자동 데이터 추천"],
-    summary="사용자 ID로 설문 데이터만 가져와서 추천",
-    description="""
-    사용자 ID만으로 메인 서버에서 설문조사 데이터를 자동으로 가져와서 추천을 제공합니다.
-    
-    사용 시나리오: 설문 데이터만 필요하고 수면 데이터는 없는 경우
-    동작 과정:
-    1. 메인 서버에서 설문 데이터 가져오기 (<code>/users/survey/{userID}/result</code>)
-    2. 설문 결과를 자연어로 변환하여 RAG 검색 실행
-    3. 사용자 선호도 기반 개인화 추천 결과 반환
-    
-    특징: 사용자의 주관적 선호도와 목표를 반영한 맞춤형 추천
-    """,
-    response_model=RecommendResponse
-)
-async def get_survey_auto_recommendation(
-    user_id: str = Path(..., description="추천할 사용자의 고유 ID")
-) -> Dict:
-    """
-    사용자 ID만으로 메인 서버에서 설문 데이터를 자동으로 가져와서 추천합니다.
-    
-    Args:
-        user_id: 사용자 고유 ID
-        
-    Returns:
-        설문 데이터 기반 추천 결과
-    """
-    try:
-        # 메인 서버에서 설문 데이터 가져오기
-        survey_data = await data_fetcher.fetch_survey_data(user_id)
-        
-        # 설문 기반 추천 실행
-        return recommend(survey_data)
-        
-    except Exception as e:
-        print(f"[Survey Auto Recommendation] Error: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to get survey auto recommendation: {str(e)}"
-        )
-
-@app.get(
-    "/recommend/simple/{user_id}", 
-    tags=["자동 데이터 추천"],
-    summary="간단한 추천 - userId만으로",
-    description="""
-    사용자 ID만으로 메인 서버에서 데이터를 가져와서 간단한 형태로 추천을 제공합니다.
-    
-    사용 시나리오: 가장 간단한 형태의 추천이 필요한 경우
-    동작 과정:
-    1. 메인 서버에서 수면 데이터와 설문 데이터를 모두 가져오기
-    2. 통합 추천 알고리즘 실행
-    3. 사용자 ID와 함께 추천 결과 반환
-    
-    응답 형태: <code>{"userId": "...", "recommendation": {...}}</code>
-    """,
-    response_model=SimpleRecommendResponse
-)
-async def get_simple_recommendation(
-    user_id: str = Path(..., description="추천할 사용자의 고유 ID")
-) -> Dict:
-    """
-    사용자 ID만으로 간단한 추천을 제공합니다.
-    
-    Args:
-        user_id: 사용자 고유 ID
-        
-    Returns:
-        사용자 ID와 함께 추천 결과
-    """
-    try:
-        # 메인 서버에서 통합 데이터 가져오기
-        combined_data = await data_fetcher.fetch_combined_data(user_id)
-        
-        # 기본 설정
-        combined_data["preferenceMode"] = "effectiveness"
-        combined_data["preferredSounds"] = combined_data.get("preferredSounds", [])
-        combined_data["previousRecommendations"] = combined_data.get("previousRecommendations", [])
-        
-        # 추천 실행
-        result = recommend_with_both_data(combined_data)
-        
-        return {
-            "userId": user_id,
-            "recommendation": result
-        }
-        
-    except Exception as e:
-        print(f"[Simple Recommendation] Error: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to get simple recommendation: {str(e)}"
-        )
 
 @app.post(
     "/recommend/receive", 
