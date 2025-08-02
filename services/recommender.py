@@ -1,7 +1,7 @@
 # recommender.py
 
 from services.embedding_service import embed_text
-from utils.prompt_builder import build_prompt, build_sleep_prompt
+from utils.prompt_builder import build_prompt, build_sleep_prompt, build_combined_prompt
 from services.rag_recommender import recommend_by_vector
 from services.llm_service import generate_recommendation_text
 from services.score_calculator import compute_final_scores
@@ -92,6 +92,76 @@ def recommend_with_sleep_data(user_input: dict):
         s["sound"]["preference"] = (
             "top" if s["id"] in user_input["preferredSounds"] else "none"
         )
+    return {
+        "recommendation_text": text,
+        "recommended_sounds": [s["sound"] for s in scored]
+    }
+
+# ------------------------------
+# 3. 통합 추천 (수면 데이터 + 설문 데이터)
+# ------------------------------
+def recommend_with_both_data(user_input: dict):
+    print("[recommend_with_both_data] user_input:", user_input)
+    
+    # 1. 수면 데이터와 설문 데이터를 모두 사용한 프롬프트 생성
+    sleep_data = {
+        "previous": user_input["previous"],
+        "current": user_input["current"]
+    }
+    
+    survey_data = {k: v for k, v in user_input.items() 
+                   if k not in ["userId", "preferenceMode", "preferredSounds", 
+                               "previous", "current", "previousRecommendations"]}
+    
+    prompt_for_rag = build_combined_prompt(sleep_data, survey_data)
+    print("[recommend_with_both_data] prompt_for_rag:", prompt_for_rag)
+    
+    # 2. 통합 프롬프트로 임베딩 생성
+    embedding = embed_text(prompt_for_rag["summary"])
+    print("[recommend_with_both_data] embedding shape:", getattr(embedding, 'shape', None))
+    
+    # 3. FAISS 유사도 검색
+    similar_sounds = recommend_by_vector(embedding)
+    print(f"[recommend_with_both_data] similar_sounds (top 3): {[s.get('filename') for s in similar_sounds[:3]]}")
+    
+    # 4. 점수 계산 (수면 데이터 기반)
+    scored = compute_final_scores(
+        candidates=similar_sounds,
+        preferred_ids=user_input["preferredSounds"],
+        effectiveness_input={
+            "prev_score": user_input["previous"]["sleepScore"],
+            "curr_score": user_input["current"]["sleepScore"],
+            "main_sounds": user_input["previousRecommendations"][:1],  
+            "sub_sounds": user_input["previousRecommendations"][1:]    
+        },
+        mode=user_input["preferenceMode"]  # preference or effectiveness
+    )
+    print(f"[recommend_with_both_data] scored (top 3): {[{'filename': s['sound'].get('filename'), 'score': s['score']} for s in scored[:3]]}")
+    
+    # 5. Top 3 추출
+    top3 = [s["sound"] for s in scored[:3]]
+    
+    # 6. LLM으로 추천 텍스트 생성 (설문 데이터의 선호도 정보 포함)
+    user_preferences = {
+        "preferredSleepSound": user_input.get("preferredSleepSound"),
+        "calmingSoundType": user_input.get("calmingSoundType"),
+        "noisePreference": user_input.get("noisePreference")
+    }
+    
+    text = generate_recommendation_text(
+        user_prompt=prompt_for_rag,
+        sound_results=top3,
+        user_preferences=user_preferences
+    )
+    print("[recommend_with_both_data] LLM text:", text)
+    
+    # 7. 응답 형식 맞추기
+    for i, s in enumerate(scored):
+        s["sound"]["rank"] = i + 1
+        s["sound"]["preference"] = (
+            "top" if s["id"] in user_input["preferredSounds"] else "none"
+        )
+    
     return {
         "recommendation_text": text,
         "recommended_sounds": [s["sound"] for s in scored]

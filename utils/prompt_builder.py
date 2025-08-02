@@ -92,3 +92,27 @@ def build_sleep_prompt(previous: Dict, current: Dict) -> Dict:
             "score": score_level
         }
     }
+
+# 수면 데이터와 설문 데이터를 모두 사용하는 통합 프롬프트 생성
+def build_combined_prompt(sleep_data: Dict, survey_data: Dict) -> Dict:
+    print("[build_combined_prompt] sleep_data:", sleep_data)
+    print("[build_combined_prompt] survey_data:", survey_data)
+    
+    # 1. 수면 데이터 기반 요약 생성
+    sleep_summary = build_sleep_prompt(sleep_data["previous"], sleep_data["current"])
+    
+    # 2. 설문 데이터 기반 요약 생성
+    survey_summary = build_prompt(survey_data)
+    
+    # 3. 통합 요약 생성
+    combined_summary = f"{sleep_summary['summary']} {survey_summary}"
+    
+    print("[build_combined_prompt] combined_summary:", combined_summary)
+    
+    return {
+        "summary": combined_summary,
+        "sleep_summary": sleep_summary,
+        "survey_summary": survey_summary,
+        "improvement": sleep_summary.get("improvement", {}),
+        "evaluation": sleep_summary.get("evaluation", {})
+    }
