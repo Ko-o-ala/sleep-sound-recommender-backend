@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 # .env 파일 로드 (import 전에 먼저 실행)
 load_dotenv()
 
-from services.recommender import recommend, recommend_with_sleep_data, recommend_with_both_data
+from services.recommender import recommend, recommend_with_both_data
 from services.data_fetcher import data_fetcher
 
 # API 키 확인
@@ -41,14 +41,13 @@ app = FastAPI(
     사용자의 수면 데이터와 설문조사 데이터를 기반으로 맞춤형 수면 사운드를 추천하는 API입니다.
 
     주요 기능:
-    • 설문 데이터 기반 추천: 사용자 설문조사 결과를 바탕으로 추천
-    • 수면 데이터 기반 추천: 수면 패턴 분석을 통한 추천  
-    • 통합 추천: 설문과 수면 데이터를 모두 활용한 추천
+    • 설문 데이터 기반 추천: 사용자 설문조사 결과를 바탕으로 추천 (첫 사용 시)
+    • 통합 추천: 설문과 수면 데이터를 모두 활용한 추천 (수면 데이터 쌓인 후)
     • 메인 서버 연동: 메인 서버에서 데이터를 직접 전송받아 추천
 
-    사용 방법:
-    • POST 엔드포인트로 데이터를 직접 전송하여 추천 받기
-    • 메인 서버가 데이터를 수집하여 추천 서버에 전송하는 구조
+    사용 시나리오:
+    • 첫 사용: 설문조사만으로 추천 (/recommend)
+    • 수면 데이터 쌓인 후: 수면+설문 통합 추천 (/recommend/combined)
 
     주의사항:
     • 이 API는 데이터가 도착했을 때만 추천을 수행합니다
@@ -131,41 +130,7 @@ class UserSurveyDto(BaseModel):
         }
     }
 
-# 수면 데이터 기반 추천 입력 스키마
-SLEEP_DATA_EXAMPLE = {
-    "userId": "user123",
-    "preferenceMode": "effectiveness",
-    "preferredSounds": ["NATURE_1_WATER.mp3", "WHITE_2_UNDERWATER.mp3"],
-    "previous": {
-        "sleepScore": 68,
-        "deepSleepRatio": 0.12,
-        "remSleepRatio": 0.14,
-        "awakeRatio": 0.18
-    },
-    "current": {
-        "sleepScore": 75,
-        "deepSleepRatio": 0.17,
-        "remSleepRatio": 0.19,
-        "awakeRatio": 0.13
-    },
-    "previousRecommendations": ["ASMR_2_HAIR.mp3", "ASMR_3_TAPPING.mp3", "FIRE_2.mp3"]
-}
 
-class SleepDataDto(BaseModel):
-    userId: str
-    preferenceMode: str = Field(..., example="effectiveness", description="추천 기준: preference / effectiveness")
-    preferredSounds: List[str] = []
-    previous: Dict[str, Any]
-    current: Dict[str, Any]
-    previousRecommendations: List[str] = []
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {"value": SLEEP_DATA_EXAMPLE}
-            ]
-        }
-    }
 
 # 통합 추천 입력 스키마 (수면 데이터 + 설문 데이터)
 class CombinedDataDto(BaseModel):
@@ -246,30 +211,7 @@ def get_recommendation(request: UserSurveyDto) -> Dict:
     user_input = request.dict()
     return recommend(user_input)
 
-@app.post(
-    "/recommend/sleep", 
-    tags=["추천 서비스"],
-    summary="수면 데이터 기반 수면 사운드 추천",
-    description="""
-    사용자의 수면 데이터를 직접 전송받아 수면 사운드를 추천합니다.
-    
-    사용 시나리오: 클라이언트가 수면 데이터를 직접 가지고 있는 경우
-    입력 데이터: 이전/현재 수면 점수, 깊은 수면 비율, REM 수면 비율, 각성 비율 등
-    추천 방식: 수면 패턴 분석 + 효과성 기반 점수 계산 + 선호도 반영
-    """,
-    response_model=RecommendResponse
-)
-def get_sleep_based_recommendation(request: SleepDataDto) -> Dict:
-    """
-    수면 데이터를 기반으로 수면 사운드를 추천합니다.
-    
-    Args:
-        request: 사용자 수면 데이터 (이전/현재 수면 정보 포함)
-        
-    Returns:
-        수면 패턴 분석 기반 추천 텍스트와 추천 사운드 목록
-    """
-    return recommend_with_sleep_data(request.dict())
+
 
 @app.post(
     "/recommend/combined", 
