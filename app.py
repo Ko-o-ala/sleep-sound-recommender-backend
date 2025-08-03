@@ -90,6 +90,25 @@ USER_SURVEY_EXAMPLE = {
     "preferredFeedbackFormat": "text"
 }
 
+SLEEP_DATA_EXAMPLE = {
+    "userId": "user123",
+    "preferenceMode": "effectiveness",
+    "preferredSounds": ["NATURE_1_WATER.mp3", "WHITE_2_UNDERWATER.mp3"],
+    "previous": {
+        "sleepScore": 68,
+        "deepSleepRatio": 0.12,
+        "remSleepRatio": 0.14,
+        "awakeRatio": 0.18
+    },
+    "current": {
+        "sleepScore": 75,
+        "deepSleepRatio": 0.17,
+        "remSleepRatio": 0.19,
+        "awakeRatio": 0.13
+    },
+    "previousRecommendations": ["ASMR_2_HAIR.mp3", "ASMR_3_TAPPING.mp3", "FIRE_2.mp3"]
+}
+
 # 설문 응답 기반 입력 스키마
 class UserSurveyDto(BaseModel):
     sleepLightUsage: Optional[str] = None
