@@ -24,7 +24,14 @@ def compute_effectiveness(prev_score, curr_score, main_sounds=[], sub_sounds=[])
 
 
 # 추천 모드에 따라 alpha(선호도), beta(효과성) 가중치 설정
-def choose_weights(mode):
+def choose_weights(mode, balance=None):
+    if balance is not None:
+        # balance: 0.0(효과성 중심) ~ 1.0(선호도 중심)
+        alpha = balance * 0.5  # 선호도 가중치 (0.0 ~ 0.5)
+        beta = (1.0 - balance) * 0.5  # 효과성 가중치 (0.5 ~ 0.0)
+        return alpha, beta
+    
+    # 기존 모드 호환성 유지
     if mode == "preference":
         return 0.4, 0.1  # 선호도 중심
     elif mode == "effectiveness":
@@ -33,9 +40,9 @@ def choose_weights(mode):
 
 
 # 후보 사운드 리스트에 대해 최종 점수 계산 후 정렬하는 메인 함수
-def compute_final_scores(candidates, preferred_ids, effectiveness_input, mode="effectiveness"):
+def compute_final_scores(candidates, preferred_ids, effectiveness_input, mode="effectiveness", balance=None):
     print("[compute_final_scores] candidates (top 3):", [c.get('filename') for c in candidates[:3]])
-    alpha, beta = choose_weights(mode)
+    alpha, beta = choose_weights(mode, balance)
     print(f"[compute_final_scores] alpha: {alpha}, beta: {beta}")
     pref_weights = softmax_rank_weights(preferred_ids)
     print("[compute_final_scores] pref_weights:", pref_weights)

@@ -96,7 +96,8 @@ def recommend_with_both_data(user_input: dict):
             "main_sounds": user_input["previousRecommendations"][:1],  
             "sub_sounds": user_input["previousRecommendations"][1:]    
         },
-        mode=user_input["preferenceMode"]  # preference or effectiveness
+        mode=user_input["preferenceMode"],  # preference or effectiveness
+        balance=user_input.get("preferenceBalance")  # 0.0~1.0 실수값
     )
     print(f"[recommend_with_both_data] scored (top 3): {[{'filename': s['sound'].get('filename'), 'score': s['score']} for s in scored[:3]]}")
     
