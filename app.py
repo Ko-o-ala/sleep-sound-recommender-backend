@@ -88,7 +88,7 @@ USER_SURVEY_EXAMPLE = {
     "stressLevel": "high",
     "sleepGoal": "improveSleepQuality",
     "preferredFeedbackFormat": "text",
-    "preferenceBalance": 0.75
+    "preferenceBalance": 7
 }
 
 SLEEP_DATA_EXAMPLE = {
@@ -141,7 +141,7 @@ class UserSurveyDto(BaseModel):
     stressLevel: Optional[str] = None
     sleepGoal: Optional[str] = None
     preferredFeedbackFormat: Optional[str] = None
-    preferenceBalance: Optional[float] = Field(default=0.5, ge=0.0, le=1.0, description="선호도 vs 효과성 밸런스 (0.0=효과성 중심, 1.0=선호도 중심)")
+    preferenceBalance: Optional[int] = Field(default=5, ge=0, le=10, description="선호도 vs 효과성 밸런스 (0=선호도 중심, 10=효과성 중심, 5=균형)")
 
     model_config = {
         "json_schema_extra": {
