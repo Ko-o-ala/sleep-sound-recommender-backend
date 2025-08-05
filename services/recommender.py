@@ -72,7 +72,7 @@ def recommend_with_both_data(user_input: dict):
     }
     
     survey_data = {k: v for k, v in user_input.items() 
-                   if k not in ["userId", "preferenceMode", "preferredSounds", 
+                   if k not in ["userId", "preferredSounds", 
                                "previous", "current", "previousRecommendations"]}
     
     prompt_for_rag = build_combined_prompt(sleep_data, survey_data)
@@ -96,8 +96,7 @@ def recommend_with_both_data(user_input: dict):
             "main_sounds": user_input["previousRecommendations"][:1],  
             "sub_sounds": user_input["previousRecommendations"][1:]    
         },
-        mode=user_input["preferenceMode"],  # preference or effectiveness
-        balance=user_input.get("preferenceBalance")  # 0.0~1.0 실수값
+        balance=user_input.get("preferenceBalance")  # 0~10 정수값
     )
     print(f"[recommend_with_both_data] scored (top 3): {[{'filename': s['sound'].get('filename'), 'score': s['score']} for s in scored[:3]]}")
     

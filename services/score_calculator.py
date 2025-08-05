@@ -23,8 +23,8 @@ def compute_effectiveness(prev_score, curr_score, main_sounds=[], sub_sounds=[])
     return eff_dict  # 사운드 filename별 효과성 가중치 딕셔너리
 
 
-# 추천 모드에 따라 alpha(선호도), beta(효과성) 가중치 설정
-def choose_weights(mode, balance=None):
+# preferenceBalance에 따라 alpha(선호도), beta(효과성) 가중치 설정
+def choose_weights(balance=None):
     if balance is not None:
         # balance: 0~10 정수를 0.0~1.0 실수로 변환
         # 0(선호도 중심) ~ 10(효과성 중심) -> 0.0(선호도 중심) ~ 1.0(효과성 중심)
@@ -35,18 +35,14 @@ def choose_weights(mode, balance=None):
         beta = normalized_balance * 0.5  # 효과성 가중치 (0.0 ~ 0.5)
         return alpha, beta
     
-    # 기존 모드 호환성 유지
-    if mode == "preference":
-        return 0.4, 0.1  # 선호도 중심
-    elif mode == "effectiveness":
-        return 0.1, 0.4  # 수면 개선 중심
-    return 0.25, 0.25  # 기본값: 균형형
+    # 기본값: 균형형
+    return 0.25, 0.25
 
 
 # 후보 사운드 리스트에 대해 최종 점수 계산 후 정렬하는 메인 함수
-def compute_final_scores(candidates, preferred_ids, effectiveness_input, mode="effectiveness", balance=None):
+def compute_final_scores(candidates, preferred_ids, effectiveness_input, balance=None):
     print("[compute_final_scores] candidates (top 3):", [c.get('filename') for c in candidates[:3]])
-    alpha, beta = choose_weights(mode, balance)
+    alpha, beta = choose_weights(balance=balance)
     print(f"[compute_final_scores] alpha: {alpha}, beta: {beta}")
     pref_weights = softmax_rank_weights(preferred_ids)
     print("[compute_final_scores] pref_weights:", pref_weights)

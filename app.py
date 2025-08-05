@@ -93,7 +93,6 @@ USER_SURVEY_EXAMPLE = {
 
 SLEEP_DATA_EXAMPLE = {
     "userId": "user123",
-    "preferenceMode": "effectiveness",
     "preferredSounds": ["NATURE_1_WATER.mp3", "WHITE_2_UNDERWATER.mp3"],
     "previous": {
         "sleepScore": 68,
@@ -156,7 +155,6 @@ class UserSurveyDto(BaseModel):
 # 통합 추천 입력 스키마 (수면 데이터 + 설문 데이터)
 class CombinedDataDto(BaseModel):
     userId: str
-    preferenceMode: str = Field(..., example="effectiveness", description="추천 기준: preference / effectiveness")
     preferredSounds: List[str] = []
     previous: Dict[str, Any]
     current: Dict[str, Any]
