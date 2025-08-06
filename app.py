@@ -98,12 +98,14 @@ SLEEP_DATA_EXAMPLE = {
         "sleepScore": 68,
         "deepSleepRatio": 0.12,
         "remSleepRatio": 0.14,
+        "lightSleepRatio": 0.56,
         "awakeRatio": 0.18
     },
     "current": {
         "sleepScore": 75,
         "deepSleepRatio": 0.17,
         "remSleepRatio": 0.19,
+        "lightSleepRatio": 0.51,
         "awakeRatio": 0.13
     },
     "previousRecommendations": ["ASMR_2_HAIR.mp3", "ASMR_3_TAPPING.mp3", "FIRE_2.mp3"]
