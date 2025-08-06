@@ -59,56 +59,70 @@ app = FastAPI(
 
 # 예시 데이터
 USER_SURVEY_EXAMPLE = {
-    "sleepLightUsage": "none",
-    "lightColorTemperature": "warmYellow",
-    "noisePreference": "nature",
-    "noisePreferenceOther": "팝송",
-    "youtubeContentType": "none",
-    "youtubeContentTypeOther": "아이돌 영상",
-    "usualBedtime": "12to2am",
-    "usualWakeupTime": "7to9am",
-    "dayActivityType": "outdoor",
-    "morningSunlightExposure": "daily",
-    "napFrequency": "none",
-    "napDuration": "none",
-    "mostDrowsyTime": "afternoon",
-    "averageSleepDuration": "4to6h",
-    "sleepIssues": ["fallAsleepHard", "wakeOften"],
-    "emotionalSleepInterference": ["stress", "anxiety"],
-    "emotionalSleepInterferenceOther": "",
-    "preferredSleepSound": "nature",
-    "calmingSoundType": "rain",
-    "calmingSoundTypeOther": "",
-    "sleepDevicesUsed": [],
-    "soundAutoOffType": "autoOff1hour",
-    "timeToFallAsleep": "over30min",
-    "caffeineIntakeLevel": "none",
-    "exerciseFrequency": "sometimes",
-    "screenTimeBeforeSleep": "30minTo1hour",
-    "stressLevel": "high",
-    "sleepGoal": "improveSleepQuality",
-    "preferredFeedbackFormat": "text",
-    "preferenceBalance": 7
+    # === 설문조사 데이터 ===
+    "sleepLightUsage": "none",                    # 수면 조명 사용 여부
+    "lightColorTemperature": "warmYellow",        # 조명 색온도
+    "noisePreference": "nature",                  # 소음 선호도
+    "noisePreferenceOther": "팝송",               # 기타 소음 선호도
+    "youtubeContentType": "none",                 # 유튜브 콘텐츠 타입
+    "youtubeContentTypeOther": "아이돌 영상",     # 기타 유튜브 콘텐츠
+    "usualBedtime": "12to2am",                   # 평소 취침 시간
+    "usualWakeupTime": "7to9am",                 # 평소 기상 시간
+    "dayActivityType": "outdoor",                 # 주간 활동 타입
+    "morningSunlightExposure": "daily",          # 아침 햇빛 노출
+    "napFrequency": "none",                       # 낮잠 빈도
+    "napDuration": "none",                        # 낮잠 지속시간
+    "mostDrowsyTime": "afternoon",               # 가장 졸린 시간
+    "averageSleepDuration": "4to6h",             # 평균 수면 시간
+    "sleepIssues": ["fallAsleepHard", "wakeOften"], # 수면 문제
+    "emotionalSleepInterference": ["stress", "anxiety"], # 정서적 수면 방해
+    "emotionalSleepInterferenceOther": "",        # 기타 정서적 방해
+    "preferredSleepSound": "nature",              # 선호하는 수면 사운드
+    "calmingSoundType": "rain",                   # 진정 사운드 타입
+    "calmingSoundTypeOther": "",                  # 기타 진정 사운드
+    "sleepDevicesUsed": [],                       # 사용하는 수면 기기
+    "soundAutoOffType": "autoOff1hour",          # 사운드 자동 종료 타입
+    "timeToFallAsleep": "over30min",             # 잠들기까지 시간
+    "caffeineIntakeLevel": "none",                # 카페인 섭취 수준
+    "exerciseFrequency": "sometimes",             # 운동 빈도
+    "screenTimeBeforeSleep": "30minTo1hour",     # 취침 전 스크린 시간
+    "stressLevel": "high",                        # 스트레스 수준
+    "sleepGoal": "improveSleepQuality",          # 수면 목표
+    "preferredFeedbackFormat": "text",            # 선호하는 피드백 형식
+    
+    # === 추천 기준 설정 ===
+    "preferenceBalance": 7                        # 선호도 vs 효과성 밸런스 (0~10)
 }
 
 SLEEP_DATA_EXAMPLE = {
-    "userId": "user123",
-    "preferredSounds": ["NATURE_1_WATER.mp3", "WHITE_2_UNDERWATER.mp3"],
-    "previous": {
-        "sleepScore": 68,
-        "deepSleepRatio": 0.12,
-        "remSleepRatio": 0.14,
-        "lightSleepRatio": 0.56,
-        "awakeRatio": 0.18
+    # === 기본 정보 ===
+    "userId": "user123",                          # 사용자 ID
+    
+    # === 수면 데이터 ===
+    "preferredSounds": [                          # 사용자가 좋아한 사운드들 (3개)
+        "NATURE_1_WATER.mp3",                    # 계곡물 흐름
+        "WHITE_2_UNDERWATER.mp3",                # 수중 백색소음
+        "ASMR_2_HAIR.mp3"                        # 머리카락 빗는 소리
+    ],
+    "previous": {                                 # 이전 수면 데이터
+        "sleepScore": 68,                         # 이전 수면 점수
+        "deepSleepRatio": 0.12,                   # 이전 깊은 수면 비율
+        "remSleepRatio": 0.14,                    # 이전 REM 수면 비율
+        "lightSleepRatio": 0.56,                  # 이전 얕은 수면 비율
+        "awakeRatio": 0.18                        # 이전 각성 비율
     },
-    "current": {
-        "sleepScore": 75,
-        "deepSleepRatio": 0.17,
-        "remSleepRatio": 0.19,
-        "lightSleepRatio": 0.51,
-        "awakeRatio": 0.13
+    "current": {                                  # 현재 수면 데이터
+        "sleepScore": 75,                         # 현재 수면 점수
+        "deepSleepRatio": 0.17,                   # 현재 깊은 수면 비율
+        "remSleepRatio": 0.19,                    # 현재 REM 수면 비율
+        "lightSleepRatio": 0.51,                  # 현재 얕은 수면 비율
+        "awakeRatio": 0.13                        # 현재 각성 비율
     },
-    "previousRecommendations": ["ASMR_2_HAIR.mp3", "ASMR_3_TAPPING.mp3", "FIRE_2.mp3"]
+    "previousRecommendations": [                  # 이전 추천 사운드들 (3개)
+        "ASMR_2_HAIR.mp3",                       # 머리카락 빗는 소리
+        "ASMR_3_TAPPING.mp3",                    # 손가락 두드림
+        "FIRE_2.mp3"                             # 불 소리
+    ]
 }
 
 # 설문 응답 기반 입력 스키마
@@ -231,8 +245,6 @@ def get_recommendation(request: UserSurveyDto) -> Dict:
     """
     user_input = request.dict()
     return recommend(user_input)
-
-
 
 @app.post(
     "/recommend/combined", 
