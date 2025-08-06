@@ -87,7 +87,28 @@ USER_SURVEY_EXAMPLE = {
     "screenTimeBeforeSleep": "30minTo1hour",
     "stressLevel": "high",
     "sleepGoal": "improveSleepQuality",
-    "preferredFeedbackFormat": "text"
+    "preferredFeedbackFormat": "text",
+    "preferenceBalance": 7
+}
+
+SLEEP_DATA_EXAMPLE = {
+    "userId": "user123",
+    "preferredSounds": ["NATURE_1_WATER.mp3", "WHITE_2_UNDERWATER.mp3"],
+    "previous": {
+        "sleepScore": 68,
+        "deepSleepRatio": 0.12,
+        "remSleepRatio": 0.14,
+        "lightSleepRatio": 0.56,
+        "awakeRatio": 0.18
+    },
+    "current": {
+        "sleepScore": 75,
+        "deepSleepRatio": 0.17,
+        "remSleepRatio": 0.19,
+        "lightSleepRatio": 0.51,
+        "awakeRatio": 0.13
+    },
+    "previousRecommendations": ["ASMR_2_HAIR.mp3", "ASMR_3_TAPPING.mp3", "FIRE_2.mp3"]
 }
 
 # 설문 응답 기반 입력 스키마
@@ -121,6 +142,7 @@ class UserSurveyDto(BaseModel):
     stressLevel: Optional[str] = None
     sleepGoal: Optional[str] = None
     preferredFeedbackFormat: Optional[str] = None
+    preferenceBalance: Optional[int] = Field(default=5, ge=0, le=10, description="선호도 vs 효과성 밸런스 (0=선호도 중심, 10=효과성 중심, 5=균형)")
 
     model_config = {
         "json_schema_extra": {
@@ -135,7 +157,6 @@ class UserSurveyDto(BaseModel):
 # 통합 추천 입력 스키마 (수면 데이터 + 설문 데이터)
 class CombinedDataDto(BaseModel):
     userId: str
-    preferenceMode: str = Field(..., example="effectiveness", description="추천 기준: preference / effectiveness")
     preferredSounds: List[str] = []
     previous: Dict[str, Any]
     current: Dict[str, Any]

@@ -63,12 +63,14 @@ def build_combined_prompt(sleep_data: Dict, survey_data: Dict) -> Dict:
     # 변화량 계산
     deep_delta = round(current.get("deepSleepRatio", 0) - previous.get("deepSleepRatio", 0), 4)
     rem_delta = round(current.get("remSleepRatio", 0) - previous.get("remSleepRatio", 0), 4)
+    light_delta = round(current.get("lightSleepRatio", 0) - previous.get("lightSleepRatio", 0), 4)
     awake_delta = round(current.get("awakeRatio", 0) - previous.get("awakeRatio", 0), 4)
     score_delta = round(current.get("sleepScore", 0) - previous.get("sleepScore", 0), 1)
     
     # 현재 상태에 대한 등급 평가
     deep_level = evaluate_status(current.get("deepSleepRatio", 0), {"good": 0.20, "warning": 0.13})
     rem_level = evaluate_status(current.get("remSleepRatio", 0), {"good": 0.22, "warning": 0.15})
+    light_level = evaluate_status(current.get("lightSleepRatio", 0), {"good": 0.45, "warning": 0.35})
     awake_level = evaluate_status(current.get("awakeRatio", 0), {"good": 0.10, "warning": 0.15})
     score_level = evaluate_status(current.get("sleepScore", 0), {"good": 80, "warning": 65})
     
@@ -79,6 +81,8 @@ def build_combined_prompt(sleep_data: Dict, survey_data: Dict) -> Dict:
         summary.append("잦은 각성")
     if deep_level == "bad":
         summary.append("깊은 수면 부족")
+    if light_level == "bad":
+        summary.append("얕은 수면 부족")
     if score_level == "bad":
         summary.append("전반적인 수면 질 저하")
     
@@ -89,11 +93,13 @@ def build_combined_prompt(sleep_data: Dict, survey_data: Dict) -> Dict:
         "improvement": {
             "score_delta": score_delta,
             "deep_delta": deep_delta,
+            "light_delta": light_delta,
             "awake_delta": awake_delta
         },
         "evaluation": {
             "deep": deep_level,
             "rem": rem_level,
+            "light": light_level,
             "awake": awake_level,
             "score": score_level
         }
