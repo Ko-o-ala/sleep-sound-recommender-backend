@@ -24,22 +24,22 @@ class DataFetcher:
     def _get_dummy_sleep_data(self, user_id: str) -> Dict[str, Any]:
         """API 키가 없을 때 사용할 더미 수면 데이터"""
         return {
-                    "previous": {
-            "sleepScore": 68,
-            "deepSleepRatio": 0.12,
-            "remSleepRatio": 0.14,
-            "lightSleepRatio": 0.56,
-            "awakeRatio": 0.18
-        },
-        "current": {
-            "sleepScore": 75,
-            "deepSleepRatio": 0.17,
-            "remSleepRatio": 0.19,
-            "lightSleepRatio": 0.51,
-            "awakeRatio": 0.13
-        },
-            "preferredSounds": ["NATURE_1_WATER.mp3"],
-            "previousRecommendations": ["ASMR_2_HAIR.mp3", "FIRE_2.mp3"]
+            "previous": {
+                "sleepScore": 68,
+                "deepSleepRatio": 0.12,
+                "remSleepRatio": 0.14,
+                "lightSleepRatio": 0.56,
+                "awakeRatio": 0.18
+            },
+            "current": {
+                "sleepScore": 75,
+                "deepSleepRatio": 0.17,
+                "remSleepRatio": 0.19,
+                "lightSleepRatio": 0.51,
+                "awakeRatio": 0.13
+            },
+            "preferredSounds": ["NATURE_1_WATER.mp3", "WHITE_2_UNDERWATER.mp3", "ASMR_2_HAIR.mp3"],
+            "previousRecommendations": ["ASMR_2_HAIR.mp3", "ASMR_3_TAPPING.mp3", "FIRE_2.mp3"]
         }
     
     def _get_dummy_survey_data(self, user_id: str) -> Dict[str, Any]:
