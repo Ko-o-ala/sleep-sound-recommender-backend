@@ -10,3 +10,6 @@ venv/
 
 # 데이터베이스 인덱스 파일
 data/sound_index.faiss
+
+# VS Code 설정 파일
+.vscode/

@@ -1,4 +1,12 @@
 # prompt_builder.py
+# AASM(미국수면의학회) 공식 가이드라인 기반 수면지표 평가 시스템
+# 
+# 수면 단계별 정상 비율 (총 수면 시간 대비):
+# - 깊은 수면(N3): 13-23% (20%↑ 우수, 13%↓ 경고)
+# - 렘수면(REM): 20-25% (22%↑ 우수, 20%↓ 경고)  
+# - 총 얕은 수면(N1+N2): 40-60% (50% 근처 우수, 40%↓ 경고)
+# - 각성(WASO): 15% 미만 정상 (10%↓ 우수, 15%↑ 경고)
+# - 수면 점수: 80점↑ 좋음, 65-80점 애매, 65점↓ 나쁨
 
 from typing import Dict, List, Optional
 from services.llm_service import translate_korean_to_english
@@ -67,11 +75,16 @@ def build_combined_prompt(sleep_data: Dict, survey_data: Dict) -> Dict:
     awake_delta = round(current.get("awakeRatio", 0) - previous.get("awakeRatio", 0), 4)
     score_delta = round(current.get("sleepScore", 0) - previous.get("sleepScore", 0), 1)
     
-    # 현재 상태에 대한 등급 평가
+    # 현재 상태에 대한 등급 평가 (AASM 공식 가이드라인 기준)
+    # 깊은 수면: 13-23%가 정상, 20% 이상은 우수, 13% 미만은 경고
     deep_level = evaluate_status(current.get("deepSleepRatio", 0), {"good": 0.20, "warning": 0.13})
-    rem_level = evaluate_status(current.get("remSleepRatio", 0), {"good": 0.22, "warning": 0.15})
-    light_level = evaluate_status(current.get("lightSleepRatio", 0), {"good": 0.45, "warning": 0.35})
+    # 렘수면: 20-25%가 정상, 22% 이상은 우수, 20% 미만은 경고
+    rem_level = evaluate_status(current.get("remSleepRatio", 0), {"good": 0.22, "warning": 0.20})
+    # 총 얕은 수면(N1+N2): 40-60%가 정상, 50% 근처가 우수, 40% 미만은 경고
+    light_level = evaluate_status(current.get("lightSleepRatio", 0), {"good": 0.50, "warning": 0.40})
+    # 각성: 15% 미만이 정상, 10% 이하면 우수, 15% 이상은 경고
     awake_level = evaluate_status(current.get("awakeRatio", 0), {"good": 0.10, "warning": 0.15})
+    # 수면 점수: 80점 이상은 좋음, 65-80점은 애매, 65점 미만은 나쁨
     score_level = evaluate_status(current.get("sleepScore", 0), {"good": 80, "warning": 65})
     
     # 자연어 요약 문장 구성
