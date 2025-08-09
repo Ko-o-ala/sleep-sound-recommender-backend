@@ -10,7 +10,7 @@
   - 설문조사 데이터 기반 추천
   - 수면 데이터 기반 추천
   - 통합 데이터 기반 추천
-  - 메인 서버와의 직접 연동
+  
   - RAG(Retrieval-Augmented Generation) 기반 추천 시스템
 
 ## 개발 환경 설정 및 실행
@@ -42,7 +42,7 @@ pip install -r requirements.txt
 프로젝트 루트에 `.env` 파일을 생성하고 다음 내용을 추가:
 
 ```bash
-# 메인 서버 설정
+
 MAIN_SERVER_URL=https://kooala.tassoo.uk
 MAIN_SERVER_API_KEY=your_api_key_here
 
@@ -71,8 +71,7 @@ uvicorn app:app --reload --host 0.0.0.0 --port 8000
 - **POST** `/recommend/sleep` - 수면 데이터를 직접 전송하여 추천
 - **POST** `/recommend/combined` - 수면 데이터와 설문 데이터를 모두 전송하여 추천
 
-### 메인 서버 연동
-- **POST** `/recommend/receive` - 메인 서버에서 데이터를 받아서 추천
+
 
 ### 시스템
 - **GET** `/` - 서버 상태 확인
@@ -98,7 +97,7 @@ python-engine/
 │   └── index_builder.py       # FAISS 인덱스 빌더
 │
 ├── services/                   # 핵심 비즈니스 로직
-│   ├── data_fetcher.py        # 메인 서버 데이터 가져오기
+│   ├── data_fetcher.py        # 데이터 가져오기 서비스
 │   ├── embedding_service.py   # 텍스트 임베딩 서비스
 │   ├── llm_service.py         # LLM 연동 서비스
 │   ├── rag_recommender.py     # RAG 추천 엔진
@@ -202,10 +201,7 @@ POST /recommend/combined
 - FAISS를 통한 유사도 기반 검색
 - OpenAI를 사용한 개인화된 추천 텍스트 생성
 
-### 2. 메인 서버 연동
-- 메인 서버에서 데이터를 직접 전송받아 처리
-- 데이터가 도착했을 때만 추천을 수행하는 구조
-- 메인 서버가 데이터를 수집하여 추천 서버에 POST
+
 
 ### 3. 다양한 추천 모드
 - **preference**: 사용자 선호도 기반 추천
@@ -220,14 +216,10 @@ POST /recommend/combined
 
 | 변수명 | 설명 | 필수 여부 |
 |--------|------|-----------|
-| `MAIN_SERVER_URL` | 메인 서버 URL | 선택 (기본값: https://kooala.tassoo.uk) |
-| `MAIN_SERVER_API_KEY` | 메인 서버 API 키 | 필수 |
 | `OPENAI_API_KEY` | OpenAI API 키 | 필수 |
 
 ## 개발 참고사항
 
-- **중요**: 이 API는 데이터가 도착했을 때만 추천을 수행합니다
-- 자동 데이터 가져오기 기능은 제공하지 않습니다
-- 메인 서버가 데이터를 모아서 추천 서버에 POST해야 합니다
 - 모든 API 엔드포인트는 Swagger UI에서 테스트 가능
 - 비동기 처리로 성능 최적화
+- RAG 기반 추천 시스템으로 개인화된 결과 제공

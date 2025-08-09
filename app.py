@@ -43,16 +43,10 @@ app = FastAPI(
     주요 기능:
     • 설문 데이터 기반 추천: 사용자 설문조사 결과를 바탕으로 추천 (첫 사용 시)
     • 통합 추천: 설문과 수면 데이터를 모두 활용한 추천 (수면 데이터 쌓인 후)
-    • 메인 서버 연동: 메인 서버에서 데이터를 직접 전송받아 추천
 
     사용 시나리오:
     • 첫 사용: 설문조사만으로 추천 (/recommend)
     • 수면 데이터 쌓인 후: 수면+설문 통합 추천 (/recommend/combined)
-
-    주의사항:
-    • 이 API는 데이터가 도착했을 때만 추천을 수행합니다
-    • 자동 데이터 가져오기 기능은 제공하지 않습니다
-    • 메인 서버가 데이터를 모아서 추천 서버에 POST해야 합니다
     """,
     version="1.0.0"
 )
@@ -271,49 +265,7 @@ def get_combined_recommendation(request: CombinedDataDto) -> Dict:
     """
     return recommend_with_both_data(request.dict())
 
-@app.post(
-    "/recommend/receive", 
-    tags=["메인 서버 연동"],
-    summary="메인 서버에서 데이터를 받아서 추천",
-    description="""
-    메인 서버가 보낸 데이터를 받아서 추천을 제공합니다.
-    
-    사용 시나리오: 메인 서버에서 직접 데이터를 전송하는 경우
-    입력 데이터: 메인 서버가 전송하는 JSON 형태의 사용자 데이터
-    특징: 메인 서버와의 직접적인 연동을 위한 엔드포인트
-    """,
-    response_model=RecommendResponse
-)
-async def receive_and_recommend(request: Request) -> Dict:
-    """
-    메인 서버가 보낸 데이터를 받아서 추천을 제공합니다.
-    
-    Args:
-        request: 메인 서버가 전송한 JSON 데이터
-        
-    Returns:
-        메인 서버 데이터 기반 추천 결과
-    """
-    try:
-        # 메인 서버가 보낸 JSON 데이터 받기
-        data = await request.json()
-        print(f"[Receive Recommendation] Received data: {data}")
-        
-        # 데이터 구조 확인 및 처리
-        if "userId" not in data:
-            raise HTTPException(status_code=400, detail="userId is required")
-        
-        # 추천 실행
-        result = recommend_with_both_data(data)
-        
-        return result
-        
-    except Exception as e:
-        print(f"[Receive Recommendation] Error: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to process received data: {str(e)}"
-        )
+
 
 # 루트 엔드포인트 (상태 확인용)
 @app.get(
