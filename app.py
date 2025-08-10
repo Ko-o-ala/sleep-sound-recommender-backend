@@ -119,6 +119,222 @@ SLEEP_DATA_EXAMPLE = {
     ]
 }
 
+# 새로운 API 엔드포인트들을 위한 예시 데이터
+NEW_COMBINED_EXAMPLE = {
+    "userId": "user123",                       
+    "preferredSounds": [                        
+        "NATURE_1_WATER.mp3",                   
+        "WHITE_2_UNDERWATER.mp3",          
+        "ASMR_2_HAIR.mp3"                   
+    ],
+    "previous": {                               
+        "sleepScore": 68,                     
+        "remSleepRatio": 0.14,                    
+        "lightSleepRatio": 0.2,               
+        "awakeRatio": 0.18                        
+    },
+    "current": {                                 
+        "sleepScore": 75,                       
+        "deepSleepRatio": 0.17,                   
+        "remSleepRatio": 0.19,                  
+        "lightSleepRatio": 0.24,                 
+        "awakeRatio": 0.13                  
+    },
+    "previousRecommendations": [],  # 기존 추천 결과 없음
+    
+    "sleepLightUsage": "none",
+    "lightColorTemperature": "warmYellow",
+    "noisePreference": "nature",
+    "noisePreferenceOther": "팝송",
+    "youtubeContentType": "none",
+    "youtubeContentTypeOther": "아이돌 영상",
+    "usualBedtime": "12to2am",
+    "usualWakeupTime": "7to9am",
+    "dayActivityType": "outdoor",
+    "morningSunlightExposure": "daily",
+    "napFrequency": "none",
+    "napDuration": "none",
+    "mostDrowsyTime": "afternoon",
+    "averageSleepDuration": "4to6h",
+    "sleepIssues": ["fallAsleepHard", "wakeOften"],
+    "emotionalSleepInterference": ["stress", "anxiety"],
+    "emotionalSleepInterferenceOther": "",
+    "preferredSleepSound": "nature",
+    "calmingSoundType": "rain",
+    "calmingSoundTypeOther": "",
+    "sleepDevicesUsed": [],
+    "soundAutoOffType": "autoOff1hour",
+    "timeToFallAsleep": "over30min",
+    "caffeineIntakeLevel": "none",
+    "exerciseFrequency": "sometimes",
+    "screenTimeBeforeSleep": "30minTo1hour",
+    "stressLevel": "high",
+    "sleepGoal": "improveSleepQuality",
+    "preferredFeedbackFormat": "text",
+    
+    "preferenceBalance": 7                   
+}
+
+EXISTING_COMBINED_EXAMPLE = {
+    "userId": "user123",                       
+    "preferredSounds": [                        
+        "NATURE_1_WATER.mp3",                   
+        "WHITE_2_UNDERWATER.mp3",          
+        "ASMR_2_HAIR.mp3"                   
+    ],
+    "previous": {                               
+        "sleepScore": 68,                     
+        "remSleepRatio": 0.14,                    
+        "lightSleepRatio": 0.2,               
+        "awakeRatio": 0.18                        
+    },
+    "current": {                                 
+        "sleepScore": 75,                       
+        "deepSleepRatio": 0.17,                   
+        "remSleepRatio": 0.19,                  
+        "lightSleepRatio": 0.24,                 
+        "awakeRatio": 0.13                  
+    },
+    "previousRecommendations": [               
+        "ASMR_2_HAIR.mp3",                        
+        "ASMR_3_TAPPING.mp3",                  
+        "FIRE_2.mp3"                           
+    ],
+    
+    "sleepLightUsage": "none",
+    "lightColorTemperature": "warmYellow",
+    "noisePreference": "nature",
+    "noisePreferenceOther": "팝송",
+    "youtubeContentType": "none",
+    "youtubeContentTypeOther": "아이돌 영상",
+    "usualBedtime": "12to2am",
+    "usualWakeupTime": "7to9am",
+    "dayActivityType": "outdoor",
+    "morningSunlightExposure": "daily",
+    "napFrequency": "none",
+    "napDuration": "none",
+    "mostDrowsyTime": "afternoon",
+    "averageSleepDuration": "4to6h",
+    "sleepIssues": ["fallAsleepHard", "wakeOften"],
+    "emotionalSleepInterference": ["stress", "anxiety"],
+    "emotionalSleepInterferenceOther": "",
+    "preferredSleepSound": "nature",
+    "calmingSoundType": "rain",
+    "calmingSoundTypeOther": "",
+    "sleepDevicesUsed": [],
+    "soundAutoOffType": "autoOff1hour",
+    "timeToFallAsleep": "over30min",
+    "caffeineIntakeLevel": "none",
+    "exerciseFrequency": "sometimes",
+    "screenTimeBeforeSleep": "30minTo1hour",
+    "stressLevel": "high",
+    "sleepGoal": "improveSleepQuality",
+    "preferredFeedbackFormat": "text",
+    
+    "preferenceBalance": 7                   
+}
+
+# 새로운 API 엔드포인트들을 위한 DTO 클래스들
+class NewCombinedDataDto(BaseModel):
+    userId: str
+    preferredSounds: List[str] = []
+    previous: Dict[str, Any]
+    current: Dict[str, Any]
+    previousRecommendations: List[str] = []  # 빈 배열 (첫 추천)
+    # 설문 데이터 필드들
+    sleepLightUsage: Optional[str] = None
+    lightColorTemperature: Optional[str] = None
+    noisePreference: Optional[str] = None
+    noisePreferenceOther: Optional[str] = None
+    youtubeContentType: Optional[str] = None
+    youtubeContentTypeOther: Optional[str] = None
+    usualBedtime: Optional[str] = None
+    usualWakeupTime: Optional[str] = None
+    dayActivityType: Optional[str] = None
+    morningSunlightExposure: Optional[str] = None
+    napFrequency: Optional[str] = None
+    napDuration: Optional[str] = None
+    mostDrowsyTime: Optional[str] = None
+    averageSleepDuration: Optional[str] = None
+    sleepIssues: Optional[List[str]] = None
+    emotionalSleepInterference: Optional[List[str]] = None
+    emotionalSleepInterferenceOther: Optional[str] = None
+    preferredSleepSound: Optional[str] = None
+    calmingSoundType: Optional[str] = None
+    calmingSoundTypeOther: Optional[str] = None
+    sleepDevicesUsed: Optional[List[str]] = None
+    soundAutoOffType: Optional[str] = None
+    timeToFallAsleep: Optional[str] = None
+    caffeineIntakeLevel: Optional[str] = None
+    exerciseFrequency: Optional[str] = None
+    screenTimeBeforeSleep: Optional[str] = None
+    stressLevel: Optional[str] = None
+    sleepGoal: Optional[str] = None
+    preferredFeedbackFormat: Optional[str] = None
+    preferenceBalance: Optional[int] = Field(default=5, ge=0, le=10, description="선호도 vs 효과성 밸런스 (0=선호도 중심, 10=효과성 중심, 5=균형)")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "name": "첫 추천 (기존 추천 결과 없음)",
+                    "summary": "수면 데이터와 설문 데이터를 바탕으로 첫 번째 맞춤형 추천을 받는 경우",
+                    "value": NEW_COMBINED_EXAMPLE
+                }
+            ]
+        }
+    }
+
+class ExistingCombinedDataDto(BaseModel):
+    userId: str
+    preferredSounds: List[str] = []
+    previous: Dict[str, Any]
+    current: Dict[str, Any]
+    previousRecommendations: List[str]  # 필수 필드 (기존 추천 결과)
+    # 설문 데이터 필드들
+    sleepLightUsage: Optional[str] = None
+    lightColorTemperature: Optional[str] = None
+    noisePreference: Optional[str] = None
+    noisePreferenceOther: Optional[str] = None
+    youtubeContentType: Optional[str] = None
+    youtubeContentTypeOther: Optional[str] = None
+    usualBedtime: Optional[str] = None
+    usualWakeupTime: Optional[str] = None
+    dayActivityType: Optional[str] = None
+    morningSunlightExposure: Optional[str] = None
+    napFrequency: Optional[str] = None
+    napDuration: Optional[str] = None
+    mostDrowsyTime: Optional[str] = None
+    averageSleepDuration: Optional[str] = None
+    sleepIssues: Optional[List[str]] = None
+    emotionalSleepInterference: Optional[List[str]] = None
+    emotionalSleepInterferenceOther: Optional[str] = None
+    preferredSleepSound: Optional[str] = None
+    calmingSoundType: Optional[str] = None
+    calmingSoundTypeOther: Optional[str] = None
+    sleepDevicesUsed: Optional[List[str]] = None
+    soundAutoOffType: Optional[str] = None
+    timeToFallAsleep: Optional[str] = None
+    caffeineIntakeLevel: Optional[str] = None
+    exerciseFrequency: Optional[str] = None
+    screenTimeBeforeSleep: Optional[str] = None
+    stressLevel: Optional[str] = None
+    sleepGoal: Optional[str] = None
+    preferredFeedbackFormat: Optional[str] = None
+    preferenceBalance: Optional[int] = Field(default=5, ge=0, le=10, description="선호도 vs 효과성 밸런스 (0=선호도 중심, 10=효과성 중심, 5=균형)")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "name": "기존 추천 업데이트 (기존 추천 결과 있음)",
+                    "summary": "기존 추천 결과를 바탕으로 더 나은 추천을 받는 경우",
+                    "value": EXISTING_COMBINED_EXAMPLE
+                }
+            ]
+        }
+    }
+
 # 설문 응답 기반 입력 스키마
 class UserSurveyDto(BaseModel):
     sleepLightUsage: Optional[str] = None
@@ -204,10 +420,12 @@ class CombinedDataDto(BaseModel):
         "json_schema_extra": {
             "examples": [
                 {
-                    "value": {
-                        **SLEEP_DATA_EXAMPLE,
-                        **USER_SURVEY_EXAMPLE
-                    }
+                    "name": "기존 추천 결과 있음 (기본)",
+                    "value": EXISTING_COMBINED_EXAMPLE
+                },
+                {
+                    "name": "기존 추천 결과 없음 (첫 추천)",
+                    "value": NEW_COMBINED_EXAMPLE
                 }
             ]
         }
@@ -241,29 +459,94 @@ def get_recommendation(request: UserSurveyDto) -> Dict:
     return recommend(user_input)
 
 @app.post(
+    "/recommend/combined/new", 
+    tags=["추천 서비스"],
+    summary="수면 데이터 + 설문 데이터 기반 첫 추천 (기존 추천 결과 없음)",
+    description="""
+    수면 데이터와 설문 데이터를 모두 전송받아 첫 번째 추천을 제공합니다.
+    
+    사용 시나리오: 클라이언트가 수면 데이터와 설문 데이터를 모두 가지고 있지만, 기존 추천 결과가 없는 경우
+    입력 데이터: 수면 패턴 정보 + 설문조사 결과 (기존 추천 결과 제외)
+    추천 방식: 수면 데이터 분석 + 설문 선호도 반영 + 신규 추천 알고리즘 실행
+    """,
+    response_model=RecommendResponse
+)
+def get_new_combined_recommendation(request: NewCombinedDataDto) -> Dict:
+    """
+    수면 데이터와 설문 데이터를 활용하여 첫 번째 추천을 제공합니다.
+    
+    Args:
+        request: 수면 데이터와 설문 데이터가 포함된 통합 데이터 (기존 추천 결과 제외)
+        
+    Returns:
+        신규 추천 알고리즘 기반 추천 텍스트와 추천 사운드 목록
+    """
+    return recommend_with_both_data(request.dict(), is_new_user=True)
+
+@app.post(
+    "/recommend/combined/existing", 
+    tags=["추천 서비스"],
+    summary="수면 데이터 + 설문 데이터 기반 기존 추천 업데이트 (기존 추천 결과 있음)",
+    description="""
+    수면 데이터와 설문 데이터, 그리고 기존 추천 결과를 모두 전송받아 추천을 업데이트합니다.
+    
+    사용 시나리오: 클라이언트가 수면 데이터, 설문 데이터, 기존 추천 결과를 모두 가지고 있는 경우
+    입력 데이터: 수면 패턴 정보 + 설문조사 결과 + 기존 추천 결과
+    추천 방식: 수면 데이터 분석 + 설문 선호도 반영 + 기존 추천 결과 학습 + 개선된 추천 알고리즘
+    """,
+    response_model=RecommendResponse
+)
+def get_existing_combined_recommendation(request: ExistingCombinedDataDto) -> Dict:
+    """
+    수면 데이터, 설문 데이터, 기존 추천 결과를 모두 활용하여 추천을 업데이트합니다.
+    
+    Args:
+        request: 수면 데이터, 설문 데이터, 기존 추천 결과가 모두 포함된 통합 데이터
+        
+    Returns:
+        기존 추천 결과를 학습한 개선된 추천 텍스트와 추천 사운드 목록
+    """
+    return recommend_with_both_data(request.dict(), is_new_user=False)
+
+# 기존 엔드포인트는 하위 호환성을 위해 유지하되, 자동 감지 로직 추가
+@app.post(
     "/recommend/combined", 
     tags=["추천 서비스"],
-    summary="수면 데이터 + 설문 데이터 기반 통합 추천",
+    summary="수면 데이터 + 설문 데이터 기반 통합 추천 (자동 감지)",
     description="""
     수면 데이터와 설문 데이터를 모두 전송받아 통합적으로 수면 사운드를 추천합니다.
+    기존 추천 결과의 유무에 따라 자동으로 적절한 추천 방식을 선택합니다.
     
     사용 시나리오: 클라이언트가 수면 데이터와 설문 데이터를 모두 가지고 있는 경우
-    입력 데이터: 수면 패턴 정보 + 설문조사 결과
-    추천 방식: 수면 데이터 분석 + 설문 선호도 반영 + 통합 점수 계산
+    입력 데이터: 수면 패턴 정보 + 설문조사 결과 (기존 추천 결과는 선택사항)
+    추천 방식: 
+    • 기존 추천 결과가 있으면: 수면 데이터 분석 + 설문 선호도 반영 + 기존 추천 결과 학습
+    • 기존 추천 결과가 없으면: 수면 데이터 분석 + 설문 선호도 반영 + 신규 추천 알고리즘
     """,
     response_model=RecommendResponse
 )
 def get_combined_recommendation(request: CombinedDataDto) -> Dict:
     """
     수면 데이터와 설문 데이터를 모두 활용하여 통합 추천을 제공합니다.
+    기존 추천 결과의 유무에 따라 자동으로 적절한 추천 방식을 선택합니다.
     
     Args:
-        request: 수면 데이터와 설문 데이터가 모두 포함된 통합 데이터
+        request: 수면 데이터와 설문 데이터가 포함된 통합 데이터
         
     Returns:
-        통합 분석 기반 추천 텍스트와 추천 사운드 목록
+        상황에 맞는 추천 텍스트와 추천 사운드 목록
     """
-    return recommend_with_both_data(request.dict())
+    # 기존 추천 결과가 있는지 자동 감지
+    has_previous_recommendations = (
+        hasattr(request, 'previousRecommendations') and 
+        request.previousRecommendations and 
+        len(request.previousRecommendations) > 0
+    )
+    
+    return recommend_with_both_data(
+        request.dict(), 
+        is_new_user=not has_previous_recommendations
+    )
 
 
 

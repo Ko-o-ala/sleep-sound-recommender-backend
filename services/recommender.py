@@ -62,8 +62,8 @@ def recommend(user_input: dict):
 # ------------------------------
 # 3. 통합 추천 (수면 데이터 + 설문 데이터)
 # ------------------------------
-def recommend_with_both_data(user_input: dict):
-    print("[recommend_with_both_data] user_input:", user_input)
+def recommend_with_both_data(user_input: dict, is_new_user: bool = True):
+    print(f"[recommend_with_both_data] user_input: {user_input}, is_new_user: {is_new_user}")
     
     # 1. 수면 데이터와 설문 데이터를 모두 사용한 프롬프트 생성
     sleep_data = {
@@ -86,29 +86,57 @@ def recommend_with_both_data(user_input: dict):
     similar_sounds = recommend_by_vector(embedding)
     print(f"[recommend_with_both_data] similar_sounds (top 3): {[s.get('filename') for s in similar_sounds[:3]]}")
     
-    # 4. 점수 계산 (수면 데이터 기반)
-    scored = compute_final_scores(
-        candidates=similar_sounds,
-        preferred_ids=user_input["preferredSounds"],
-        effectiveness_input={
-            "prev_score": user_input["previous"]["sleepScore"],
-            "curr_score": user_input["current"]["sleepScore"],
-            "main_sounds": user_input["previousRecommendations"][:1],  
-            "sub_sounds": user_input["previousRecommendations"][1:]    
-        },
-        balance=user_input.get("preferenceBalance")  # 0~10 정수값
-    )
+    # 4. 점수 계산 (기존 추천 결과 유무에 따라 다른 방식 적용)
+    if is_new_user:
+        # 기존 추천 결과가 없는 경우: 기본 점수 계산
+        print("[recommend_with_both_data] New user: Using basic scoring")
+        scored = compute_final_scores(
+            candidates=similar_sounds,
+            preferred_ids=user_input["preferredSounds"],
+            effectiveness_input={
+                "prev_score": user_input["previous"]["sleepScore"],
+                "curr_score": user_input["current"]["sleepScore"],
+                "main_sounds": [],  # 기존 추천 결과 없음
+                "sub_sounds": []    # 기존 추천 결과 없음
+            },
+            balance=user_input.get("preferenceBalance", 5)  # 기본값 5 (균형)
+        )
+    else:
+        # 기존 추천 결과가 있는 경우: 기존 결과를 학습하여 개선된 점수 계산
+        print("[recommend_with_both_data] Existing user: Using enhanced scoring with previous recommendations")
+        scored = compute_final_scores(
+            candidates=similar_sounds,
+            preferred_ids=user_input["preferredSounds"],
+            effectiveness_input={
+                "prev_score": user_input["previous"]["sleepScore"],
+                "curr_score": user_input["current"]["sleepScore"],
+                "main_sounds": user_input.get("previousRecommendations", [])[:1],  
+                "sub_sounds": user_input.get("previousRecommendations", [])[1:]    
+            },
+            balance=user_input.get("preferenceBalance", 5)  # 0~10 정수값
+        )
+    
     print(f"[recommend_with_both_data] scored (top 3): {[{'filename': s['sound'].get('filename'), 'score': s['score']} for s in scored[:3]]}")
     
     # 5. Top 3 추출
     top3 = [s["sound"] for s in scored[:3]]
     
-    # 6. LLM으로 추천 텍스트 생성 (설문 데이터의 선호도 정보 포함)
+    # 6. LLM으로 추천 텍스트 생성 (기존 추천 결과 유무에 따라 다른 프롬프트)
     user_preferences = {
         "preferredSleepSound": user_input.get("preferredSleepSound"),
         "calmingSoundType": user_input.get("calmingSoundType"),
         "noisePreference": user_input.get("noisePreference")
     }
+    
+    # 기존 추천 결과 유무에 따라 다른 컨텍스트 제공
+    if not is_new_user and user_input.get("previousRecommendations"):
+        # 기존 추천 결과가 있는 경우: 개선된 추천 메시지
+        context_info = f"이전에 추천받은 사운드들({', '.join(user_input['previousRecommendations'][:3])})을 바탕으로 더 나은 추천을 제공합니다."
+        print(f"[recommend_with_both_data] Context for existing user: {context_info}")
+    else:
+        # 기존 추천 결과가 없는 경우: 첫 추천 메시지
+        context_info = "수면 데이터와 설문 결과를 바탕으로 첫 번째 맞춤형 추천을 제공합니다."
+        print(f"[recommend_with_both_data] Context for new user: {context_info}")
     
     text = generate_recommendation_text(
         user_prompt=prompt_for_rag,
