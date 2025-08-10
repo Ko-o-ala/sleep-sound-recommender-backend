@@ -27,6 +27,7 @@ class SoundRecommendation(BaseModel):
     preference: str = Field(..., description="사용자 선호도 (top/none)")
 
 class RecommendResponse(BaseModel):
+    userId: str = Field(..., description="사용자 ID")
     recommendation_text: str = Field(..., description="개인화된 추천 설명 텍스트")
     recommended_sounds: List[SoundRecommendation] = Field(..., description="추천된 사운드 목록")
 
@@ -53,6 +54,9 @@ app = FastAPI(
 
 # 예시 데이터
 USER_SURVEY_EXAMPLE = {
+    # === 기본 정보 ===
+    "userId": "seoin2744",                        # 사용자 ID
+    
     # === 설문조사 데이터 ===
     "sleepLightUsage": "none",                    # 수면 조명 사용 여부
     "lightColorTemperature": "warmYellow",        # 조명 색온도
@@ -171,7 +175,6 @@ NEW_COMBINED_EXAMPLE = {
     "stressLevel": "high",
     "sleepGoal": "improveSleepQuality",
     "preferredFeedbackFormat": "text",
-    
     "preferenceBalance": 7                   
 }
 
@@ -200,7 +203,6 @@ EXISTING_COMBINED_EXAMPLE = {
         "ASMR_3_TAPPING.mp3",                  
         "FIRE_2.mp3"                           
     ],
-    
     "sleepLightUsage": "none",
     "lightColorTemperature": "warmYellow",
     "noisePreference": "nature",
@@ -230,7 +232,6 @@ EXISTING_COMBINED_EXAMPLE = {
     "stressLevel": "high",
     "sleepGoal": "improveSleepQuality",
     "preferredFeedbackFormat": "text",
-    
     "preferenceBalance": 7                   
 }
 
@@ -276,11 +277,7 @@ class NewCombinedDataDto(BaseModel):
     model_config = {
         "json_schema_extra": {
             "examples": [
-                {
-                    "name": "첫 추천 (기존 추천 결과 없음)",
-                    "summary": "수면 데이터와 설문 데이터를 바탕으로 첫 번째 맞춤형 추천을 받는 경우",
-                    "value": NEW_COMBINED_EXAMPLE
-                }
+                NEW_COMBINED_EXAMPLE
             ]
         }
     }
@@ -326,17 +323,14 @@ class ExistingCombinedDataDto(BaseModel):
     model_config = {
         "json_schema_extra": {
             "examples": [
-                {
-                    "name": "기존 추천 업데이트 (기존 추천 결과 있음)",
-                    "summary": "기존 추천 결과를 바탕으로 더 나은 추천을 받는 경우",
-                    "value": EXISTING_COMBINED_EXAMPLE
-                }
+                EXISTING_COMBINED_EXAMPLE
             ]
         }
     }
 
 # 설문 응답 기반 입력 스키마
 class UserSurveyDto(BaseModel):
+    userId: str = Field(..., description="사용자 ID")
     sleepLightUsage: Optional[str] = None
     lightColorTemperature: Optional[str] = None
     noisePreference: Optional[str] = None
@@ -371,7 +365,7 @@ class UserSurveyDto(BaseModel):
     model_config = {
         "json_schema_extra": {
             "examples": [
-                {"value": USER_SURVEY_EXAMPLE}
+                USER_SURVEY_EXAMPLE
             ]
         }
     }
@@ -419,14 +413,8 @@ class CombinedDataDto(BaseModel):
     model_config = {
         "json_schema_extra": {
             "examples": [
-                {
-                    "name": "기존 추천 결과 있음 (기본)",
-                    "value": EXISTING_COMBINED_EXAMPLE
-                },
-                {
-                    "name": "기존 추천 결과 없음 (첫 추천)",
-                    "value": NEW_COMBINED_EXAMPLE
-                }
+                EXISTING_COMBINED_EXAMPLE,
+                NEW_COMBINED_EXAMPLE
             ]
         }
     }
@@ -453,10 +441,15 @@ def get_recommendation(request: UserSurveyDto) -> Dict:
         request: 사용자 설문조사 데이터
         
     Returns:
-        개인화된 추천 텍스트와 추천 사운드 목록
+        사용자 ID와 함께 개인화된 추천 텍스트와 추천 사운드 목록
     """
     user_input = request.dict()
-    return recommend(user_input)
+    result = recommend(user_input)
+    return {
+        "userId": user_input.get("userId", "unknown"),
+        "recommendation_text": result["recommendation_text"],
+        "recommended_sounds": result["recommended_sounds"]
+    }
 
 @app.post(
     "/recommend/combined/new", 
@@ -479,9 +472,15 @@ def get_new_combined_recommendation(request: NewCombinedDataDto) -> Dict:
         request: 수면 데이터와 설문 데이터가 포함된 통합 데이터 (기존 추천 결과 제외)
         
     Returns:
-        신규 추천 알고리즘 기반 추천 텍스트와 추천 사운드 목록
+        사용자 ID와 함께 신규 추천 알고리즘 기반 추천 텍스트와 추천 사운드 목록
     """
-    return recommend_with_both_data(request.dict(), is_new_user=True)
+    user_input = request.dict()
+    result = recommend_with_both_data(user_input, is_new_user=True)
+    return {
+        "userId": user_input.get("userId", "unknown"),
+        "recommendation_text": result["recommendation_text"],
+        "recommended_sounds": result["recommended_sounds"]
+    }
 
 @app.post(
     "/recommend/combined/existing", 
@@ -504,9 +503,15 @@ def get_existing_combined_recommendation(request: ExistingCombinedDataDto) -> Di
         request: 수면 데이터, 설문 데이터, 기존 추천 결과가 모두 포함된 통합 데이터
         
     Returns:
-        기존 추천 결과를 학습한 개선된 추천 텍스트와 추천 사운드 목록
+        사용자 ID와 함께 기존 추천 결과를 학습한 개선된 추천 텍스트와 추천 사운드 목록
     """
-    return recommend_with_both_data(request.dict(), is_new_user=False)
+    user_input = request.dict()
+    result = recommend_with_both_data(user_input, is_new_user=False)
+    return {
+        "userId": user_input.get("userId", "unknown"),
+        "recommendation_text": result["recommendation_text"],
+        "recommended_sounds": result["recommended_sounds"]
+    }
 
 # 기존 엔드포인트는 하위 호환성을 위해 유지하되, 자동 감지 로직 추가
 @app.post(
@@ -534,8 +539,10 @@ def get_combined_recommendation(request: CombinedDataDto) -> Dict:
         request: 수면 데이터와 설문 데이터가 포함된 통합 데이터
         
     Returns:
-        상황에 맞는 추천 텍스트와 추천 사운드 목록
+        사용자 ID와 함께 상황에 맞는 추천 텍스트와 추천 사운드 목록
     """
+    user_input = request.dict()
+    
     # 기존 추천 결과가 있는지 자동 감지
     has_previous_recommendations = (
         hasattr(request, 'previousRecommendations') and 
@@ -543,10 +550,16 @@ def get_combined_recommendation(request: CombinedDataDto) -> Dict:
         len(request.previousRecommendations) > 0
     )
     
-    return recommend_with_both_data(
-        request.dict(), 
+    result = recommend_with_both_data(
+        user_input, 
         is_new_user=not has_previous_recommendations
     )
+    
+    return {
+        "userId": user_input.get("userId", "unknown"),
+        "recommendation_text": result["recommendation_text"],
+        "recommended_sounds": result["recommended_sounds"]
+    }
 
 
 
