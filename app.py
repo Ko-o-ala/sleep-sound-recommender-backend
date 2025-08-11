@@ -1,7 +1,7 @@
 # app.py
 
 from fastapi import FastAPI, HTTPException, Request, Path, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Dict, Optional, Any
 import os
 from dotenv import load_dotenv
@@ -35,58 +35,13 @@ class RecommendResponse(BaseModel):
 # FastAPI 애플리케이션 생성
 app = FastAPI(
     title="수면 사운드 추천 API",
-    description="""
-    사용자의 수면 데이터와 설문조사 데이터를 기반으로 맞춤형 수면 사운드를 추천하는 API입니다.
-
-    주요 기능:
-    • 설문 데이터 기반 추천: 사용자 설문조사 결과를 바탕으로 추천 (첫 사용 시)
-    • 통합 추천: 설문과 수면 데이터를 모두 활용한 추천 (수면 데이터 쌓인 후)
-
-    사용 시나리오:
-    • 첫 사용: 설문조사만으로 추천 (/recommend)
-    • 수면 데이터 쌓인 후: 수면+설문 통합 추천 (/recommend/combined)
-    """,
     version="1.0.0"
 )
 
 # 설문 응답 기반 입력 스키마
 class UserSurveyDto(BaseModel):
-    userID: str = Field(..., description="사용자 ID")
-    date: str = Field(..., description="요청 날짜")
-    sleepLightUsage: Optional[str] = None
-    lightColorTemperature: Optional[str] = None
-    noisePreference: Optional[str] = None
-    noisePreferenceOther: Optional[str] = None
-    youtubeContentType: Optional[str] = None
-    youtubeContentTypeOther: Optional[str] = None
-    usualBedtime: Optional[str] = None
-    usualWakeupTime: Optional[str] = None
-    dayActivityType: Optional[str] = None
-    morningSunlightExposure: Optional[str] = None
-    napFrequency: Optional[str] = None
-    napDuration: Optional[str] = None
-    mostDrowsyTime: Optional[str] = None
-    averageSleepDuration: Optional[str] = None
-    sleepIssues: Optional[List[str]] = None
-    emotionalSleepInterference: Optional[List[str]] = None
-    emotionalSleepInterferenceOther: Optional[str] = None
-    preferredSleepSound: Optional[str] = None
-    calmingSoundType: Optional[str] = None
-    calmingSoundTypeOther: Optional[str] = None
-    sleepDevicesUsed: Optional[List[str]] = None
-    soundAutoOffType: Optional[str] = None
-    timeToFallAsleep: Optional[str] = None
-    caffeineIntakeLevel: Optional[str] = None
-    exerciseFrequency: Optional[str] = None
-    exerciseWhen: Optional[str] = None
-    screenTimeBeforeSleep: Optional[str] = None
-    stressLevel: Optional[str] = None
-    sleepGoal: Optional[List[str]] = None
-    preferredFeedbackFormat: Optional[str] = None
-    preferenceBalance: Optional[float] = Field(default=0.5, ge=0.0, le=1.0, description="선호도 vs 효과성 밸런스 (0.0=선호도 중심, 1.0=효과성 중심, 0.5=균형)")
-
-    model_config = {
-        "json_schema_extra": {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "userID": "seoin2744",
@@ -124,18 +79,13 @@ class UserSurveyDto(BaseModel):
                     "preferenceBalance": 0.6
                 }
             ]
-        }
-    }
-
-# 통합 추천 입력 스키마 (수면 데이터 + 설문 데이터)
-class CombinedDataDto(BaseModel):
+        },
+        json_schema_serialization_defaults=True,
+        populate_by_name=True
+    )
+    
     userID: str = Field(..., description="사용자 ID")
     date: str = Field(..., description="요청 날짜")
-    preferredSounds: List[str] = []
-    previous: Dict[str, Any]
-    current: Dict[str, Any]
-    previousRecommendations: List[str] = []
-    # 설문 데이터 필드들
     sleepLightUsage: Optional[str] = None
     lightColorTemperature: Optional[str] = None
     noisePreference: Optional[str] = None
@@ -161,14 +111,17 @@ class CombinedDataDto(BaseModel):
     timeToFallAsleep: Optional[str] = None
     caffeineIntakeLevel: Optional[str] = None
     exerciseFrequency: Optional[str] = None
+    exerciseWhen: Optional[str] = None
     screenTimeBeforeSleep: Optional[str] = None
     stressLevel: Optional[str] = None
-    sleepGoal: Optional[str] = None
+    sleepGoal: Optional[List[str]] = None
     preferredFeedbackFormat: Optional[str] = None
-    preferenceBalance: Optional[int] = Field(default=5, ge=0, le=10, description="선호도 vs 효과성 밸런스 (0=선호도 중심, 10=효과성 중심, 5=균형)")
+    preferenceBalance: Optional[float] = Field(default=0.5, ge=0.0, le=1.0, description="선호도 vs 효과성 밸런스 (0.0=선호도 중심, 1.0=효과성 중심, 0.5=균형)")
 
-    model_config = {
-        "json_schema_extra": {
+# 통합 추천 입력 스키마 (수면 데이터 + 설문 데이터)
+class CombinedDataDto(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "userID": "user123",
@@ -229,21 +182,55 @@ class CombinedDataDto(BaseModel):
                     "preferenceBalance": 7
                 }
             ]
-        }
-    }
+        },
+        json_schema_serialization_defaults=True,
+        populate_by_name=True
+    )
+    
+    userID: str = Field(..., description="사용자 ID")
+    date: str = Field(..., description="요청 날짜")
+    preferredSounds: List[str] = []
+    previous: Dict[str, Any]
+    current: Dict[str, Any]
+    previousRecommendations: List[str] = []
+    # 설문 데이터 필드들
+    sleepLightUsage: Optional[str] = None
+    lightColorTemperature: Optional[str] = None
+    noisePreference: Optional[str] = None
+    noisePreferenceOther: Optional[str] = None
+    youtubeContentType: Optional[str] = None
+    youtubeContentTypeOther: Optional[str] = None
+    usualBedtime: Optional[str] = None
+    usualWakeupTime: Optional[str] = None
+    dayActivityType: Optional[str] = None
+    morningSunlightExposure: Optional[str] = None
+    napFrequency: Optional[str] = None
+    napDuration: Optional[str] = None
+    mostDrowsyTime: Optional[str] = None
+    averageSleepDuration: Optional[str] = None
+    sleepIssues: Optional[List[str]] = None
+    emotionalSleepInterference: Optional[List[str]] = None
+    emotionalSleepInterferenceOther: Optional[str] = None
+    preferredSleepSound: Optional[str] = None
+    calmingSoundType: Optional[str] = None
+    calmingSoundTypeOther: Optional[str] = None
+    sleepDevicesUsed: Optional[List[str]] = None
+    soundAutoOffType: Optional[str] = None
+    timeToFallAsleep: Optional[str] = None
+    caffeineIntakeLevel: Optional[str] = None
+    exerciseFrequency: Optional[str] = None
+    screenTimeBeforeSleep: Optional[str] = None
+    stressLevel: Optional[str] = None
+    sleepGoal: Optional[str] = None
+    preferredFeedbackFormat: Optional[str] = None
+    preferenceBalance: Optional[int] = Field(default=5, ge=0, le=10, description="선호도 vs 효과성 밸런스 (0=선호도 중심, 10=효과성 중심, 5=균형)")
 
 # API 엔드포인트 정의
 @app.post(
     "/recommend", 
     tags=["추천 서비스"],
     summary="설문 기반 수면 사운드 추천",
-    description="""
-    사용자의 설문조사 데이터를 직접 전송받아 수면 사운드를 추천합니다.
-
-    사용 시나리오: 클라이언트가 설문조사 데이터를 직접 가지고 있는 경우
-    입력 데이터: 수면 선호도, 스트레스 레벨, 수면 목표 등 설문조사 결과
-    추천 방식: RAG(Retrieval-Augmented Generation) 기반 유사도 검색 + LLM 개인화 텍스트 생성
-    """,
+    description="사용자의 설문조사 데이터를 직접 전송받아 수면 사운드를 추천합니다. 사용 시나리오: 클라이언트가 설문조사 데이터를 직접 가지고 있는 경우. 입력 데이터: 수면 선호도, 스트레스 레벨, 수면 목표 등 설문조사 결과. 추천 방식: RAG(Retrieval-Augmented Generation) 기반 유사도 검색 + LLM 개인화 텍스트 생성",
     response_model=RecommendResponse
 )
 def get_recommendation(request: UserSurveyDto) -> Dict:
@@ -269,16 +256,7 @@ def get_recommendation(request: UserSurveyDto) -> Dict:
     "/recommend/combined", 
     tags=["추천 서비스"],
     summary="수면 데이터 + 설문 데이터 기반 통합 추천",
-    description="""
-    수면 데이터와 설문 데이터를 모두 전송받아 통합적으로 수면 사운드를 추천합니다.
-    기존 추천 결과의 유무에 따라 자동으로 적절한 추천 방식을 선택합니다.
-    
-    사용 시나리오: 클라이언트가 수면 데이터와 설문 데이터를 모두 가지고 있는 경우
-    입력 데이터: 수면 패턴 정보 + 설문조사 결과 (기존 추천 결과는 선택사항)
-    추천 방식: 
-    • 기존 추천 결과가 있으면: 수면 데이터 분석 + 설문 선호도 반영 + 기존 추천 결과 학습
-    • 기존 추천 결과가 없으면: 수면 데이터 분석 + 설문 선호도 반영 + 신규 추천 알고리즘
-    """,
+    description="수면 데이터와 설문 데이터를 모두 전송받아 통합적으로 수면 사운드를 추천합니다. 기존 추천 결과의 유무에 따라 자동으로 적절한 추천 방식을 선택합니다. 사용 시나리오: 클라이언트가 수면 데이터와 설문 데이터를 모두 가지고 있는 경우. 입력 데이터: 수면 패턴 정보 + 설문조사 결과 (기존 추천 결과는 선택사항). 추천 방식: 기존 추천 결과가 있으면 수면 데이터 분석 + 설문 선호도 반영 + 기존 추천 결과 학습, 기존 추천 결과가 없으면 수면 데이터 분석 + 설문 선호도 반영 + 신규 추천 알고리즘",
     response_model=RecommendResponse
 )
 def get_combined_recommendation(request: CombinedDataDto) -> Dict:
