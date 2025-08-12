@@ -1,0 +1,141 @@
+/* Swagger UI 커스텀 스타일 */
+
+/* 보라색 텍스트를 검정색으로 변경 */
+.swagger-ui .opblock-summary-description,
+.swagger-ui .opblock-description,
+.swagger-ui .opblock-external-docs-wrapper,
+.swagger-ui .opblock-external-docs-wrapper p,
+.swagger-ui .opblock-external-docs-wrapper h4,
+.swagger-ui .opblock-external-docs-wrapper h5,
+.swagger-ui .opblock-external-docs-wrapper h6,
+.swagger-ui .opblock-external-docs-wrapper div,
+.swagger-ui .opblock-external-docs-wrapper span,
+.swagger-ui .opblock-external-docs-wrapper strong,
+.swagger-ui .opblock-external-docs-wrapper em,
+.swagger-ui .opblock-external-docs-wrapper b,
+.swagger-ui .opblock-external-docs-wrapper i,
+.swagger-ui .opblock-external-docs-wrapper a,
+.swagger-ui .opblock-external-docs-wrapper li,
+.swagger-ui .opblock-external-docs-wrapper ul,
+.swagger-ui .opblock-external-docs-wrapper ol,
+.swagger-ui .opblock-external-docs-wrapper blockquote,
+.swagger-ui .opblock-external-docs-wrapper pre,
+.swagger-ui .opblock-external-docs-wrapper code,
+.swagger-ui .opblock-external-docs-wrapper kbd,
+.swagger-ui .opblock-external-docs-wrapper samp,
+.swagger-ui .opblock-external-docs-wrapper var,
+.swagger-ui .opblock-external-docs-wrapper mark,
+.swagger-ui .opblock-external-docs-wrapper small,
+.swagger-ui .opblock-external-docs-wrapper sub,
+.swagger-ui .opblock-external-docs-wrapper sup,
+.swagger-ui .opblock-external-docs-wrapper del,
+.swagger-ui .opblock-external-docs-wrapper ins,
+.swagger-ui .opblock-external-docs-wrapper u,
+.swagger-ui .opblock-external-docs-wrapper s,
+.swagger-ui .opblock-external-docs-wrapper strike,
+.swagger-ui .opblock-external-docs-wrapper tt,
+.swagger-ui .opblock-external-docs-wrapper kbd,
+.swagger-ui .opblock-external-docs-wrapper samp,
+.swagger-ui .opblock-external-docs-wrapper var,
+.swagger-ui .opblock-external-docs-wrapper mark,
+.swagger-ui .opblock-external-docs-wrapper small,
+.swagger-ui .opblock-external-docs-wrapper sub,
+.swagger-ui .opblock-external-docs-wrapper sup,
+.swagger-ui .opblock-external-docs-wrapper del,
+.swagger-ui .opblock-external-docs-wrapper ins,
+.swagger-ui .opblock-external-docs-wrapper u,
+.swagger-ui .opblock-external-docs-wrapper s,
+.swagger-ui .opblock-external-docs-wrapper strike,
+.swagger-ui .opblock-external-docs-wrapper tt {
+    color: #333333 !important;
+}
+
+/* API 설명 텍스트 색상 변경 */
+.swagger-ui .info .description,
+.swagger-ui .info .description *,
+.swagger-ui .info .description p,
+.swagger-ui .info .description div,
+.swagger-ui .info .description span,
+.swagger-ui .info .description strong,
+.swagger-ui .info .description em,
+.swagger-ui .info .description b,
+.swagger-ui .info .description i,
+.swagger-ui .info .description a,
+.swagger-ui .info .description li,
+.swagger-ui .info .description ul,
+.swagger-ui .info .description ol,
+.swagger-ui .info .description blockquote,
+.swagger-ui .info .description pre,
+.swagger-ui .info .description code,
+.swagger-ui .info .description kbd,
+.swagger-ui .info .description samp,
+.swagger-ui .info .description var,
+.swagger-ui .info .description mark,
+.swagger-ui .info .description small,
+.swagger-ui .info .description sub,
+.swagger-ui .info .description sup,
+.swagger-ui .info .description del,
+.swagger-ui .info .description ins,
+.swagger-ui .info .description u,
+.swagger-ui .info .description s,
+.swagger-ui .info .description strike,
+.swagger-ui .info .description tt {
+    color: #333333 !important;
+}
+
+/* 엔드포인트 설명 텍스트 색상 변경 */
+.swagger-ui .opblock-description,
+.swagger-ui .opblock-description *,
+.swagger-ui .opblock-description p,
+.swagger-ui .opblock-description div,
+.swagger-ui .opblock-description span,
+.swagger-ui .opblock-description strong,
+.swagger-ui .opblock-description em,
+.swagger-ui .opblock-description b,
+.swagger-ui .opblock-description i,
+.swagger-ui .opblock-description a,
+.swagger-ui .opblock-description li,
+.swagger-ui .opblock-description ul,
+.swagger-ui .opblock-description ol,
+.swagger-ui .opblock-description blockquote,
+.swagger-ui .opblock-description pre,
+.swagger-ui .opblock-description code,
+.swagger-ui .opblock-description kbd,
+.swagger-ui .opblock-description samp,
+.swagger-ui .opblock-description var,
+.swagger-ui .opblock-description mark,
+.swagger-ui .opblock-description small,
+.swagger-ui .opblock-description sub,
+.swagger-ui .opblock-description sup,
+.swagger-ui .opblock-description del,
+.swagger-ui .opblock-description ins,
+.swagger-ui .opblock-description u,
+.swagger-ui .opblock-description s,
+.swagger-ui .opblock-description strike,
+.swagger-ui .opblock-description tt {
+    color: #333333 !important;
+}
+
+/* 추가적인 보라색 텍스트 요소들 */
+.swagger-ui .opblock-summary-description,
+.swagger-ui .opblock-summary-description * {
+    color: #333333 !important;
+}
+
+/* 모든 보라색 텍스트를 검정색으로 변경하는 범용 규칙 */
+.swagger-ui * {
+    color: inherit;
+}
+
+.swagger-ui .opblock,
+.swagger-ui .opblock * {
+    color: #333333 !important;
+}
+
+/* 특정 보라색 클래스들을 명시적으로 변경 */
+.swagger-ui .opblock-summary-description,
+.swagger-ui .opblock-description,
+.swagger-ui .opblock-external-docs-wrapper,
+.swagger-ui .info .description {
+    color: #333333 !important;
+} 
