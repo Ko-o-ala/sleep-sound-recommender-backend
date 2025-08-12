@@ -229,8 +229,8 @@ class CombinedDataDto(BaseModel):
 @app.post(
     "/recommend", 
     tags=["추천 서비스"],
-    summary="설문 기반 수면 사운드 추천",
-    description="사용자의 설문조사 데이터를 직접 전송받아 수면 사운드를 추천합니다. 사용 시나리오: 클라이언트가 설문조사 데이터를 직접 가지고 있는 경우. 입력 데이터: 수면 선호도, 스트레스 레벨, 수면 목표 등 설문조사 결과. 추천 방식: RAG(Retrieval-Augmented Generation) 기반 유사도 검색 + LLM 개인화 텍스트 생성",
+    summary="설문 기반 수면 사운드 추천 (설문조사 데이터만)",
+    description="사용자의 설문조사 데이터만을 전송받아 수면 사운드를 추천합니다. 사용 시나리오: 클라이언트가 설문조사 데이터만 가지고 있는 경우 (첫 사용자). 입력 데이터: 수면 선호도, 스트레스 레벨, 수면 목표 등 설문조사 결과. 추천 방식: RAG(Retrieval-Augmented Generation) 기반 유사도 검색 + LLM 개인화 텍스트 생성",
     response_model=RecommendResponse
 )
 def get_recommendation(request: UserSurveyDto) -> Dict:
@@ -253,36 +253,65 @@ def get_recommendation(request: UserSurveyDto) -> Dict:
     }
 
 @app.post(
+    "/recommend/combined/new", 
+    tags=["추천 서비스"],
+    summary="수면 데이터 + 설문 데이터 기반 통합 추천 (기존 추천결과 없음)",
+    description="수면 데이터와 설문 데이터를 모두 전송받아 첫 번째 추천을 제공합니다. 사용 시나리오: 클라이언트가 수면 데이터와 설문 데이터를 모두 가지고 있지만, 기존 추천 결과가 없는 경우. 입력 데이터: 수면 패턴 정보 + 설문조사 결과 (previousRecommendations 필드 제외). 추천 방식: 수면 데이터 분석 + 설문 선호도 반영 + 신규 추천 알고리즘",
+    response_model=RecommendResponse
+)
+def get_new_combined_recommendation(request: CombinedDataDto) -> Dict:
+    """
+    수면 데이터와 설문 데이터를 활용하여 첫 번째 추천을 제공합니다.
+    기존 추천 결과가 없는 경우를 위한 엔드포인트입니다.
+    
+    Args:
+        request: 수면 데이터와 설문 데이터가 포함된 통합 데이터 (previousRecommendations는 빈 배열)
+        
+    Returns:
+        사용자 ID와 함께 신규 추천 알고리즘 기반 추천 텍스트와 추천 사운드 목록
+    """
+    user_input = request.dict()
+    
+    # previousRecommendations가 비어있거나 없는 경우를 확인
+    if not user_input.get("previousRecommendations") or len(user_input.get("previousRecommendations", [])) == 0:
+        result = recommend_with_both_data(user_input, is_new_user=True)
+    else:
+        # 만약 previousRecommendations가 있으면 기존 로직 사용
+        result = recommend_with_both_data(user_input, is_new_user=False)
+    
+    return {
+        "userID": user_input.get("userID", "unknown"),
+        "date": user_input.get("date", ""),
+        "recommendation_text": result["recommendation_text"],
+        "recommended_sounds": result["recommended_sounds"]
+    }
+
+@app.post(
     "/recommend/combined", 
     tags=["추천 서비스"],
-    summary="수면 데이터 + 설문 데이터 기반 통합 추천",
-    description="수면 데이터와 설문 데이터를 모두 전송받아 통합적으로 수면 사운드를 추천합니다. 기존 추천 결과의 유무에 따라 자동으로 적절한 추천 방식을 선택합니다. 사용 시나리오: 클라이언트가 수면 데이터와 설문 데이터를 모두 가지고 있는 경우. 입력 데이터: 수면 패턴 정보 + 설문조사 결과 (기존 추천 결과는 선택사항). 추천 방식: 기존 추천 결과가 있으면 수면 데이터 분석 + 설문 선호도 반영 + 기존 추천 결과 학습, 기존 추천 결과가 없으면 수면 데이터 분석 + 설문 선호도 반영 + 신규 추천 알고리즘",
+    summary="수면 데이터 + 설문 데이터 + 기존 추천결과 기반 통합 추천",
+    description="수면 데이터, 설문 데이터, 기존 추천 결과를 모두 전송받아 추천을 업데이트합니다. 사용 시나리오: 클라이언트가 수면 데이터, 설문 데이터, 기존 추천 결과를 모두 가지고 있는 경우. 입력 데이터: 수면 패턴 정보 + 설문조사 결과 + 기존 추천 결과 (previousRecommendations 필드 필수). 추천 방식: 수면 데이터 분석 + 설문 선호도 반영 + 기존 추천 결과 학습 + 개선된 추천 알고리즘",
     response_model=RecommendResponse
 )
 def get_combined_recommendation(request: CombinedDataDto) -> Dict:
     """
-    수면 데이터와 설문 데이터를 모두 활용하여 통합 추천을 제공합니다.
-    기존 추천 결과의 유무에 따라 자동으로 적절한 추천 방식을 선택합니다.
+    수면 데이터, 설문 데이터, 기존 추천 결과를 모두 활용하여 추천을 업데이트합니다.
+    기존 추천 결과가 있는 경우를 위한 엔드포인트입니다.
     
     Args:
-        request: 수면 데이터와 설문 데이터가 포함된 통합 데이터
+        request: 수면 데이터, 설문 데이터, 기존 추천 결과가 모두 포함된 통합 데이터
         
     Returns:
-        사용자 ID와 함께 상황에 맞는 추천 텍스트와 추천 사운드 목록
+        사용자 ID와 함께 기존 추천 결과를 학습한 개선된 추천 텍스트와 추천 사운드 목록
     """
     user_input = request.dict()
     
-    # 기존 추천 결과가 있는지 자동 감지
-    has_previous_recommendations = (
-        hasattr(request, 'previousRecommendations') and 
-        request.previousRecommendations and 
-        len(request.previousRecommendations) > 0
-    )
-    
-    result = recommend_with_both_data(
-        user_input, 
-        is_new_user=not has_previous_recommendations
-    )
+    # previousRecommendations가 있는지 확인
+    if user_input.get("previousRecommendations") and len(user_input.get("previousRecommendations", [])) > 0:
+        result = recommend_with_both_data(user_input, is_new_user=False)
+    else:
+        # 만약 previousRecommendations가 없으면 신규 로직 사용
+        result = recommend_with_both_data(user_input, is_new_user=True)
     
     return {
         "userID": user_input.get("userID", "unknown"),
