@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI, HTTPException, Request, Path, Query
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Union
 import os
 from dotenv import load_dotenv
 
@@ -66,8 +66,8 @@ class SurveyData(BaseModel):
 
 # 수면 데이터 스키마
 class SleepData(BaseModel):
-    previous: Dict[str, Any]
-    current: Dict[str, Any]
+    previous: Optional[Dict[str, Union[int, float]]] = Field(None, description="전날 수면 데이터 (없을 수 있음)")
+    current: Dict[str, Union[int, float]] = Field(..., description="오늘 수면 데이터")
 
 # 사운드 데이터 스키마
 class SoundsData(BaseModel):
@@ -113,6 +113,53 @@ class UserSurveyDto(BaseModel):
                         "sleepGoal": ["fallAsleepFast", "stayAsleep"],
                         "preferenceBalance": 0.6
                     }
+                },
+                {
+                    "userID": "user123",
+                    "date": "2025-07-15T00:00:00.000+00:00",
+                    "survey": {
+                        "sleepLightUsage": "moodLight",
+                        "lightColorTemperature": "warmYellow",
+                        "noisePreference": "other",
+                        "noisePreferenceOther": "팝송",
+                        "youtubeContentType": "other",
+                        "youtubeContentTypeOther": "아이돌 영상",
+                        "usualBedtime": "12to2am",
+                        "usualWakeupTime": "7to9am",
+                        "dayActivityType": "outdoor",
+                        "morningSunlightExposure": "sometimes",
+                        "napFrequency": "1to2perWeek",
+                        "napDuration": "15to30",
+                        "mostDrowsyTime": "afternoon",
+                        "averageSleepDuration": "4to6h",
+                        "sleepIssues": ["fallAsleepHard", "wakeOften", "nightmares"],
+                        "emotionalSleepInterference": ["stress", "anxiety"],
+                        "emotionalSleepInterferenceOther": "",
+                        "preferredSleepSound": "music",
+                        "calmingSoundType": "waves",
+                        "calmingSoundTypeOther": "",
+                        "sleepDevicesUsed": ["watch", "app"],
+                        "timeToFallAsleep": "over30min",
+                        "caffeineIntakeLevel": "1to2cups",
+                        "exerciseFrequency": "daily",
+                        "exerciseWhen": "morning",
+                        "screenTimeBeforeSleep": "over1hour",
+                        "stressLevel": "medium",
+                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
+                        "preferenceBalance": 0.6
+                    },
+                    "sounds": {
+                        "preferredSounds": [
+                            "NATURE_1_WATER.mp3",
+                            "WHITE_2_UNDERWATER.mp3",
+                            "ASMR_2_HAIR.mp3"
+                        ],
+                        "previousRecommendations": [
+                            "ASMR_2_HAIR.mp3",
+                            "ASMR_3_TAPPING.mp3",
+                            "FIRE_2.mp3"
+                        ]
+                    }
                 }
             ]
         },
@@ -123,6 +170,7 @@ class UserSurveyDto(BaseModel):
     userID: str = Field(..., description="사용자 ID")
     date: str = Field(..., description="요청 날짜")
     survey: SurveyData
+    sounds: Optional[SoundsData] = Field(None, description="선호 사운드 및 이전 추천 결과 (선택사항)")
 
 # 통합 추천 입력 스키마 (기존 추천결과 없음)
 class CombinedDataNewDto(BaseModel):
@@ -178,14 +226,51 @@ class CombinedDataNewDto(BaseModel):
                             "lightSleepRatio": 0.51,
                             "awakeRatio": 0.13
                         }
+                    }
+                },
+                {
+                    "userID": "user123",
+                    "date": "2025-07-15T00:00:00.000+00:00",
+                    "survey": {
+                        "sleepLightUsage": "moodLight",
+                        "lightColorTemperature": "warmYellow",
+                        "noisePreference": "other",
+                        "noisePreferenceOther": "팝송",
+                        "youtubeContentType": "other",
+                        "youtubeContentTypeOther": "아이돌 영상",
+                        "usualBedtime": "12to2am",
+                        "usualWakeupTime": "7to9am",
+                        "dayActivityType": "outdoor",
+                        "morningSunlightExposure": "sometimes",
+                        "napFrequency": "1to2perWeek",
+                        "napDuration": "15to30",
+                        "mostDrowsyTime": "afternoon",
+                        "averageSleepDuration": "4to6h",
+                        "sleepIssues": ["fallAsleepHard", "wakeOften", "nightmares"],
+                        "emotionalSleepInterference": ["stress", "anxiety"],
+                        "emotionalSleepInterferenceOther": "",
+                        "preferredSleepSound": "music",
+                        "calmingSoundType": "waves",
+                        "calmingSoundTypeOther": "",
+                        "sleepDevicesUsed": ["watch", "app"],
+                        "timeToFallAsleep": "over30min",
+                        "caffeineIntakeLevel": "1to2cups",
+                        "exerciseFrequency": "daily",
+                        "exerciseWhen": "morning",
+                        "screenTimeBeforeSleep": "over1hour",
+                        "stressLevel": "medium",
+                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
+                        "preferenceBalance": 0.6
                     },
-                    "sounds": {
-                        "preferredSounds": [
-                            "NATURE_1_WATER.mp3",
-                            "WHITE_2_UNDERWATER.mp3",
-                            "ASMR_2_HAIR.mp3"
-                        ],
-                        "previousRecommendations": []
+                    "sleepData": {
+                        "previous": None,
+                        "current": {
+                            "sleepScore": 75,
+                            "deepSleepRatio": 0.17,
+                            "remSleepRatio": 0.19,
+                            "lightSleepRatio": 0.51,
+                            "awakeRatio": 0.13
+                        }
                     }
                 }
             ]
@@ -198,7 +283,6 @@ class CombinedDataNewDto(BaseModel):
     date: str = Field(..., description="요청 날짜")
     survey: SurveyData
     sleepData: SleepData
-    sounds: SoundsData
 
 # 통합 추천 입력 스키마 (기존 추천결과 있음)
 class CombinedDataExistingDto(BaseModel):
@@ -267,6 +351,63 @@ class CombinedDataExistingDto(BaseModel):
                             "FIRE_2.mp3"
                         ]
                     }
+                },
+                {
+                    "userID": "user123",
+                    "date": "2025-07-15T00:00:00.000+00:00",
+                    "survey": {
+                        "sleepLightUsage": "moodLight",
+                        "lightColorTemperature": "warmYellow",
+                        "noisePreference": "other",
+                        "noisePreferenceOther": "팝송",
+                        "youtubeContentType": "other",
+                        "youtubeContentTypeOther": "아이돌 영상",
+                        "usualBedtime": "12to2am",
+                        "usualWakeupTime": "7to9am",
+                        "dayActivityType": "outdoor",
+                        "morningSunlightExposure": "sometimes",
+                        "napFrequency": "1to2perWeek",
+                        "napDuration": "15to30",
+                        "mostDrowsyTime": "afternoon",
+                        "averageSleepDuration": "4to6h",
+                        "sleepIssues": ["fallAsleepHard", "wakeOften", "nightmares"],
+                        "emotionalSleepInterference": ["stress", "anxiety"],
+                        "emotionalSleepInterferenceOther": "",
+                        "preferredSleepSound": "music",
+                        "calmingSoundType": "waves",
+                        "calmingSoundTypeOther": "",
+                        "sleepDevicesUsed": ["watch", "app"],
+                        "timeToFallAsleep": "over30min",
+                        "caffeineIntakeLevel": "1to2cups",
+                        "exerciseFrequency": "daily",
+                        "exerciseWhen": "morning",
+                        "screenTimeBeforeSleep": "over1hour",
+                        "stressLevel": "medium",
+                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
+                        "preferenceBalance": 0.6
+                    },
+                    "sleepData": {
+                        "previous": None,
+                        "current": {
+                            "sleepScore": 75,
+                            "deepSleepRatio": 0.17,
+                            "remSleepRatio": 0.19,
+                            "lightSleepRatio": 0.51,
+                            "awakeRatio": 0.13
+                        }
+                    },
+                    "sounds": {
+                        "preferredSounds": [
+                            "NATURE_1_WATER.mp3",
+                            "WHITE_2_UNDERWATER.mp3",
+                            "ASMR_2_HAIR.mp3"
+                        ],
+                        "previousRecommendations": [
+                            "ASMR_2_HAIR.mp3",
+                            "ASMR_3_TAPPING.mp3",
+                            "FIRE_2.mp3"
+                        ]
+                    }
                 }
             ]
         },
@@ -299,10 +440,17 @@ def get_recommendation(request: UserSurveyDto) -> Dict:
         사용자 ID와 함께 개인화된 추천 텍스트와 추천 사운드 목록
     """
     user_input = request.dict()
+    
     # survey 데이터를 최상위로 평탄화
     survey_data = user_input.get("survey", {})
     user_input.update(survey_data)
     del user_input["survey"]
+    
+    # sounds 데이터가 있으면 최상위로 평탄화
+    if user_input.get("sounds"):
+        sounds_data = user_input.get("sounds", {})
+        user_input.update(sounds_data)
+        del user_input["sounds"]
     
     result = recommend(user_input)
     return {
@@ -325,30 +473,23 @@ def get_new_combined_recommendation(request: CombinedDataNewDto) -> Dict:
     기존 추천 결과가 없는 경우를 위한 엔드포인트입니다.
     
     Args:
-        request: 수면 데이터와 설문 데이터가 포함된 통합 데이터 (previousRecommendations는 빈 배열)
+        request: 수면 데이터와 설문 데이터가 포함된 통합 데이터
         
     Returns:
         사용자 ID와 함께 신규 추천 알고리즘 기반 추천 텍스트와 추천 사운드 목록
     """
     user_input = request.dict()
     
-    # survey, sleepData, sounds를 최상위로 평탄화
+    # survey, sleepData를 최상위로 평탄화
     survey_data = user_input.get("survey", {})
     sleep_data = user_input.get("sleepData", {})
-    sounds_data = user_input.get("sounds", {})
     user_input.update(survey_data)
     user_input.update(sleep_data)
-    user_input.update(sounds_data)
     del user_input["survey"]
     del user_input["sleepData"]
-    del user_input["sounds"]
     
-    # previousRecommendations가 비어있거나 없는 경우를 확인
-    if not user_input.get("previousRecommendations") or len(user_input.get("previousRecommendations", [])) == 0:
-        result = recommend_with_both_data(user_input, is_new_user=True)
-    else:
-        # 만약 previousRecommendations가 있으면 기존 로직 사용
-        result = recommend_with_both_data(user_input, is_new_user=False)
+    # 신규 사용자로 처리 (previousRecommendations가 없으므로)
+    result = recommend_with_both_data(user_input, is_new_user=True)
     
     return {
         "userID": user_input.get("userID", "unknown"),
