@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI, HTTPException, Request, Path, Query
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Union
 import os
 from dotenv import load_dotenv
 
@@ -66,8 +66,8 @@ class SurveyData(BaseModel):
 
 # 수면 데이터 스키마
 class SleepData(BaseModel):
-    previous: Dict[str, Any]
-    current: Dict[str, Any]
+    previous: Optional[Dict[str, Union[int, float]]] = Field(None, description="전날 수면 데이터 (없을 수 있음)")
+    current: Dict[str, Union[int, float]] = Field(..., description="오늘 수면 데이터")
 
 # 사운드 데이터 스키마
 class SoundsData(BaseModel):
@@ -187,6 +187,59 @@ class CombinedDataNewDto(BaseModel):
                         ],
                         "previousRecommendations": []
                     }
+                },
+                {
+                    "userID": "user123",
+                    "date": "2025-07-15T00:00:00.000+00:00",
+                    "survey": {
+                        "sleepLightUsage": "moodLight",
+                        "lightColorTemperature": "warmYellow",
+                        "noisePreference": "other",
+                        "noisePreferenceOther": "팝송",
+                        "youtubeContentType": "other",
+                        "youtubeContentTypeOther": "아이돌 영상",
+                        "usualBedtime": "12to2am",
+                        "usualWakeupTime": "7to9am",
+                        "dayActivityType": "outdoor",
+                        "morningSunlightExposure": "sometimes",
+                        "napFrequency": "1to2perWeek",
+                        "napDuration": "15to30",
+                        "mostDrowsyTime": "afternoon",
+                        "averageSleepDuration": "4to6h",
+                        "sleepIssues": ["fallAsleepHard", "wakeOften", "nightmares"],
+                        "emotionalSleepInterference": ["stress", "anxiety"],
+                        "emotionalSleepInterferenceOther": "",
+                        "preferredSleepSound": "music",
+                        "calmingSoundType": "waves",
+                        "calmingSoundTypeOther": "",
+                        "sleepDevicesUsed": ["watch", "app"],
+                        "timeToFallAsleep": "over30min",
+                        "caffeineIntakeLevel": "1to2cups",
+                        "exerciseFrequency": "daily",
+                        "exerciseWhen": "morning",
+                        "screenTimeBeforeSleep": "over1hour",
+                        "stressLevel": "medium",
+                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
+                        "preferenceBalance": 0.6
+                    },
+                    "sleepData": {
+                        "previous": None,
+                        "current": {
+                            "sleepScore": 75,
+                            "deepSleepRatio": 0.17,
+                            "remSleepRatio": 0.19,
+                            "lightSleepRatio": 0.51,
+                            "awakeRatio": 0.13
+                        }
+                    },
+                    "sounds": {
+                        "preferredSounds": [
+                            "NATURE_1_WATER.mp3",
+                            "WHITE_2_UNDERWATER.mp3",
+                            "ASMR_2_HAIR.mp3"
+                        ],
+                        "previousRecommendations": []
+                    }
                 }
             ]
         },
@@ -247,6 +300,63 @@ class CombinedDataExistingDto(BaseModel):
                             "lightSleepRatio": 0.56,
                             "awakeRatio": 0.18
                         },
+                        "current": {
+                            "sleepScore": 75,
+                            "deepSleepRatio": 0.17,
+                            "remSleepRatio": 0.19,
+                            "lightSleepRatio": 0.51,
+                            "awakeRatio": 0.13
+                        }
+                    },
+                    "sounds": {
+                        "preferredSounds": [
+                            "NATURE_1_WATER.mp3",
+                            "WHITE_2_UNDERWATER.mp3",
+                            "ASMR_2_HAIR.mp3"
+                        ],
+                        "previousRecommendations": [
+                            "ASMR_2_HAIR.mp3",
+                            "ASMR_3_TAPPING.mp3",
+                            "FIRE_2.mp3"
+                        ]
+                    }
+                },
+                {
+                    "userID": "user123",
+                    "date": "2025-07-15T00:00:00.000+00:00",
+                    "survey": {
+                        "sleepLightUsage": "moodLight",
+                        "lightColorTemperature": "warmYellow",
+                        "noisePreference": "other",
+                        "noisePreferenceOther": "팝송",
+                        "youtubeContentType": "other",
+                        "youtubeContentTypeOther": "아이돌 영상",
+                        "usualBedtime": "12to2am",
+                        "usualWakeupTime": "7to9am",
+                        "dayActivityType": "outdoor",
+                        "morningSunlightExposure": "sometimes",
+                        "napFrequency": "1to2perWeek",
+                        "napDuration": "15to30",
+                        "mostDrowsyTime": "afternoon",
+                        "averageSleepDuration": "4to6h",
+                        "sleepIssues": ["fallAsleepHard", "wakeOften", "nightmares"],
+                        "emotionalSleepInterference": ["stress", "anxiety"],
+                        "emotionalSleepInterferenceOther": "",
+                        "preferredSleepSound": "music",
+                        "calmingSoundType": "waves",
+                        "calmingSoundTypeOther": "",
+                        "sleepDevicesUsed": ["watch", "app"],
+                        "timeToFallAsleep": "over30min",
+                        "caffeineIntakeLevel": "1to2cups",
+                        "exerciseFrequency": "daily",
+                        "exerciseWhen": "morning",
+                        "screenTimeBeforeSleep": "over1hour",
+                        "stressLevel": "medium",
+                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
+                        "preferenceBalance": 0.6
+                    },
+                    "sleepData": {
+                        "previous": None,
                         "current": {
                             "sleepScore": 75,
                             "deepSleepRatio": 0.17,

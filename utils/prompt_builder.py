@@ -63,17 +63,10 @@ def build_combined_prompt(sleep_data: Dict, survey_data: Dict) -> Dict:
     print("[build_combined_prompt] survey_data:", survey_data)
     
     # 1. 수면 데이터 기반 요약 생성
-    previous = sleep_data["previous"]
+    previous = sleep_data.get("previous")  # None일 수 있음
     current = sleep_data["current"]
     
     summary = []
-    
-    # 변화량 계산
-    deep_delta = round(current.get("deepSleepRatio", 0) - previous.get("deepSleepRatio", 0), 4)
-    rem_delta = round(current.get("remSleepRatio", 0) - previous.get("remSleepRatio", 0), 4)
-    light_delta = round(current.get("lightSleepRatio", 0) - previous.get("lightSleepRatio", 0), 4)
-    awake_delta = round(current.get("awakeRatio", 0) - previous.get("awakeRatio", 0), 4)
-    score_delta = round(current.get("sleepScore", 0) - previous.get("sleepScore", 0), 1)
     
     # 현재 상태에 대한 등급 평가 (AASM 공식 가이드라인 기준)
     # 깊은 수면: 13-23%가 정상, 20% 이상은 우수, 13% 미만은 경고
@@ -99,24 +92,49 @@ def build_combined_prompt(sleep_data: Dict, survey_data: Dict) -> Dict:
     if score_level == "bad":
         summary.append("전반적인 수면 질 저하")
     
+    # previous 데이터가 없는 경우 추가 설명
+    if not previous:
+        summary.append("첫 번째 수면 데이터 수집")
+    
     sleep_summary_text = " 및 ".join(summary) + "이 관찰되었습니다." if summary else "수면 상태는 전반적으로 안정적입니다."
     
-    sleep_summary = {
-        "summary": sleep_summary_text,
-        "improvement": {
-            "score_delta": score_delta,
-            "deep_delta": deep_delta,
-            "light_delta": light_delta,
-            "awake_delta": awake_delta
-        },
-        "evaluation": {
-            "deep": deep_level,
-            "rem": rem_level,
-            "light": light_level,
-            "awake": awake_level,
-            "score": score_level
+    # previous 데이터가 있는 경우에만 변화량 계산
+    if previous:
+        # 변화량 계산
+        deep_delta = round(current.get("deepSleepRatio", 0) - previous.get("deepSleepRatio", 0), 4)
+        rem_delta = round(current.get("remSleepRatio", 0) - previous.get("remSleepRatio", 0), 4)
+        light_delta = round(current.get("lightSleepRatio", 0) - previous.get("lightSleepRatio", 0), 4)
+        awake_delta = round(current.get("awakeRatio", 0) - previous.get("awakeRatio", 0), 4)
+        score_delta = round(current.get("sleepScore", 0) - previous.get("sleepScore", 0), 1)
+        
+        sleep_summary = {
+            "summary": sleep_summary_text,
+            "improvement": {
+                "score_delta": score_delta,
+                "deep_delta": deep_delta,
+                "light_delta": light_delta,
+                "awake_delta": awake_delta
+            },
+            "evaluation": {
+                "deep": deep_level,
+                "rem": rem_level,
+                "light": light_level,
+                "awake": awake_level,
+                "score": score_level
+            }
         }
-    }
+    else:
+        # previous 데이터가 없는 경우 변화량 정보 없이 생성
+        sleep_summary = {
+            "summary": sleep_summary_text,
+            "evaluation": {
+                "deep": deep_level,
+                "rem": rem_level,
+                "light": light_level,
+                "awake": awake_level,
+                "score": score_level
+            }
+        }
     
     # 2. 설문 데이터 기반 요약 생성
     survey_summary = build_prompt(survey_data)

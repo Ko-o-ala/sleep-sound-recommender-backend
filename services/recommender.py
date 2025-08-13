@@ -67,7 +67,7 @@ def recommend_with_both_data(user_input: dict, is_new_user: bool = True):
     
     # 1. 수면 데이터와 설문 데이터를 모두 사용한 프롬프트 생성
     sleep_data = {
-        "previous": user_input["previous"],
+        "previous": user_input.get("previous"),  # None일 수 있음
         "current": user_input["current"]
     }
     
@@ -90,12 +90,22 @@ def recommend_with_both_data(user_input: dict, is_new_user: bool = True):
     if is_new_user:
         # 기존 추천 결과가 없는 경우: 기본 점수 계산
         print("[recommend_with_both_data] New user: Using basic scoring")
+        
+        # previous 데이터가 있는 경우에만 prev_score 사용
+        if user_input.get("previous"):
+            prev_score = user_input["previous"]["sleepScore"]
+            curr_score = user_input["current"]["sleepScore"]
+        else:
+            # previous 데이터가 없는 경우 오늘 데이터만 사용
+            prev_score = user_input["current"]["sleepScore"]  # 오늘 데이터를 기준으로 설정
+            curr_score = user_input["current"]["sleepScore"]
+        
         scored = compute_final_scores(
             candidates=similar_sounds,
             preferred_ids=user_input["preferredSounds"],
             effectiveness_input={
-                "prev_score": user_input["previous"]["sleepScore"],
-                "curr_score": user_input["current"]["sleepScore"],
+                "prev_score": prev_score,
+                "curr_score": curr_score,
                 "main_sounds": [],  # 기존 추천 결과 없음
                 "sub_sounds": []    # 기존 추천 결과 없음
             },
@@ -104,12 +114,22 @@ def recommend_with_both_data(user_input: dict, is_new_user: bool = True):
     else:
         # 기존 추천 결과가 있는 경우: 기존 결과를 학습하여 개선된 점수 계산
         print("[recommend_with_both_data] Existing user: Using enhanced scoring with previous recommendations")
+        
+        # previous 데이터가 있는 경우에만 prev_score 사용
+        if user_input.get("previous"):
+            prev_score = user_input["previous"]["sleepScore"]
+            curr_score = user_input["current"]["sleepScore"]
+        else:
+            # previous 데이터가 없는 경우 오늘 데이터만 사용
+            prev_score = user_input["current"]["sleepScore"]  # 오늘 데이터를 기준으로 설정
+            curr_score = user_input["current"]["sleepScore"]
+        
         scored = compute_final_scores(
             candidates=similar_sounds,
             preferred_ids=user_input["preferredSounds"],
             effectiveness_input={
-                "prev_score": user_input["previous"]["sleepScore"],
-                "curr_score": user_input["current"]["sleepScore"],
+                "prev_score": prev_score,
+                "curr_score": curr_score,
                 "main_sounds": user_input.get("previousRecommendations", [])[:1],  
                 "sub_sounds": user_input.get("previousRecommendations", [])[1:]    
             },
