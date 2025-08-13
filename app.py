@@ -64,7 +64,7 @@ class SurveyData(BaseModel):
     stressLevel: Optional[str] = None
     sleepGoal: Optional[str] = None
     preferredFeedbackFormat: Optional[str] = None
-    preferenceBalance: Optional[int] = Field(default=5, ge=0, le=10, description="선호도 vs 효과성 밸런스 (0=선호도 중심, 10=효과성 중심, 5=균형)")
+    preferenceBalance: Optional[float] = Field(default=0.5, ge=0.0, le=1.0, description="선호도 vs 효과성 밸런스 (0.0=선호도 중심, 1.0=효과성 중심, 0.5=균형)")
 
 # 수면 데이터 스키마
 class SleepData(BaseModel):
@@ -112,7 +112,7 @@ class UserSurveyDto(BaseModel):
                         "stressLevel": "medium",
                         "sleepGoal": "fallAsleepFast",
                         "preferredFeedbackFormat": "text",
-                        "preferenceBalance": 6
+                        "preferenceBalance": 0.6
                     }
                 }
             ]
@@ -163,7 +163,7 @@ class CombinedDataDto(BaseModel):
                         "stressLevel": "high",
                         "sleepGoal": "improveSleepQuality",
                         "preferredFeedbackFormat": "text",
-                        "preferenceBalance": 7
+                        "preferenceBalance": 0.7
                     },
                     "sleepData": {
                         "preferredSounds": [

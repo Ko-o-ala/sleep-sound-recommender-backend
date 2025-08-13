@@ -26,13 +26,9 @@ def compute_effectiveness(prev_score, curr_score, main_sounds=[], sub_sounds=[])
 # preferenceBalance에 따라 alpha(선호도), beta(효과성) 가중치 설정
 def choose_weights(balance=None):
     if balance is not None:
-        # balance: 0~10 정수를 0.0~1.0 실수로 변환
-        # 0(선호도 중심) ~ 10(효과성 중심) -> 0.0(선호도 중심) ~ 1.0(효과성 중심)
-        normalized_balance = balance / 10.0
-        
-        # normalized_balance: 0.0(선호도 중심) ~ 1.0(효과성 중심)
-        alpha = (1.0 - normalized_balance) * 0.5  # 선호도 가중치 (0.5 ~ 0.0)
-        beta = normalized_balance * 0.5  # 효과성 가중치 (0.0 ~ 0.5)
+        # balance: 0.0~1.0 소수값 (0.0=선호도 중심, 1.0=효과성 중심)
+        alpha = (1.0 - balance) * 0.5  # 선호도 가중치 (0.5 ~ 0.0)
+        beta = balance * 0.5  # 효과성 가중치 (0.0 ~ 0.5)
         return alpha, beta
     
     # 기본값: 균형형
