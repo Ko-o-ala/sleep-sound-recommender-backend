@@ -99,7 +99,7 @@ def recommend_with_both_data(user_input: dict, is_new_user: bool = True):
                 "main_sounds": [],  # 기존 추천 결과 없음
                 "sub_sounds": []    # 기존 추천 결과 없음
             },
-            balance=user_input.get("preferenceBalance", 5)  # 기본값 5 (균형)
+            balance=user_input.get("preferenceBalance", 0.5)  # 기본값 0.5 (균형)
         )
     else:
         # 기존 추천 결과가 있는 경우: 기존 결과를 학습하여 개선된 점수 계산
@@ -113,7 +113,7 @@ def recommend_with_both_data(user_input: dict, is_new_user: bool = True):
                 "main_sounds": user_input.get("previousRecommendations", [])[:1],  
                 "sub_sounds": user_input.get("previousRecommendations", [])[1:]    
             },
-            balance=user_input.get("preferenceBalance", 5)  # 0~10 정수값
+            balance=user_input.get("preferenceBalance", 0.5)  # 0.0~1.0 소수값
         )
     
     print(f"[recommend_with_both_data] scored (top 3): {[{'filename': s['sound'].get('filename'), 'score': s['score']} for s in scored[:3]]}")

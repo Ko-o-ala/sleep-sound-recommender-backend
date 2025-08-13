@@ -12,13 +12,7 @@ load_dotenv()
 from services.recommender import recommend, recommend_with_both_data
 from services.data_fetcher import data_fetcher
 
-# API 키 확인
-api_key = os.getenv("MAIN_SERVER_API_KEY")
-if not api_key:
-    print("⚠️  WARNING: MAIN_SERVER_API_KEY is not set!")
-    print("   Please set the environment variable or add it to .env file")
-else:
-    print("✅ MAIN_SERVER_API_KEY is configured")
+
 
 # 응답 모델 정의
 class SoundRecommendation(BaseModel):
@@ -70,13 +64,16 @@ class SurveyData(BaseModel):
     stressLevel: Optional[str] = None
     sleepGoal: Optional[str] = None
     preferredFeedbackFormat: Optional[str] = None
-    preferenceBalance: Optional[int] = Field(default=5, ge=0, le=10, description="선호도 vs 효과성 밸런스 (0=선호도 중심, 10=효과성 중심, 5=균형)")
+    preferenceBalance: Optional[float] = Field(default=0.5, ge=0.0, le=1.0, description="선호도 vs 효과성 밸런스 (0.0=선호도 중심, 1.0=효과성 중심, 0.5=균형)")
 
 # 수면 데이터 스키마
 class SleepData(BaseModel):
-    preferredSounds: List[str] = []
     previous: Dict[str, Any]
     current: Dict[str, Any]
+
+# 사운드 데이터 스키마
+class SoundsData(BaseModel):
+    preferredSounds: List[str] = []
     previousRecommendations: List[str] = []
 
 # 설문 응답 기반 입력 스키마 (설문조사 데이터만)
@@ -118,7 +115,7 @@ class UserSurveyDto(BaseModel):
                         "stressLevel": "medium",
                         "sleepGoal": "fallAsleepFast",
                         "preferredFeedbackFormat": "text",
-                        "preferenceBalance": 6
+                        "preferenceBalance": 0.6
                     }
                 }
             ]
@@ -169,14 +166,9 @@ class CombinedDataDto(BaseModel):
                         "stressLevel": "high",
                         "sleepGoal": "improveSleepQuality",
                         "preferredFeedbackFormat": "text",
-                        "preferenceBalance": 7
+                        "preferenceBalance": 0.7
                     },
                     "sleepData": {
-                        "preferredSounds": [
-                            "NATURE_1_WATER.mp3",
-                            "WHITE_2_UNDERWATER.mp3",
-                            "ASMR_2_HAIR.mp3"
-                        ],
                         "previous": {
                             "sleepScore": 68,
                             "deepSleepRatio": 0.12,
@@ -190,12 +182,15 @@ class CombinedDataDto(BaseModel):
                             "remSleepRatio": 0.19,
                             "lightSleepRatio": 0.51,
                             "awakeRatio": 0.13
-                        },
-                        "previousRecommendations": [
-                            "ASMR_2_HAIR.mp3",
-                            "ASMR_3_TAPPING.mp3",
-                            "FIRE_2.mp3"
-                        ]
+                        }
+                    },
+                    "sounds": {
+                        "preferredSounds": [
+                            "NATURE_1_WATER.mp3",
+                            "WHITE_2_UNDERWATER.mp3",
+                            "ASMR_2_HAIR.mp3"
+                        ],
+                        "previousRecommendations": []
                     }
                 }
             ]
@@ -206,9 +201,9 @@ class CombinedDataDto(BaseModel):
     
     userID: str = Field(..., description="사용자 ID")
     date: str = Field(..., description="요청 날짜")
-
     survey: SurveyData
     sleepData: SleepData
+    sounds: SoundsData
 
 # API 엔드포인트 정의
 @app.post(
@@ -262,13 +257,16 @@ def get_new_combined_recommendation(request: CombinedDataDto) -> Dict:
     """
     user_input = request.dict()
     
-    # survey와 sleepData를 최상위로 평탄화
+    # survey, sleepData, sounds를 최상위로 평탄화
     survey_data = user_input.get("survey", {})
     sleep_data = user_input.get("sleepData", {})
+    sounds_data = user_input.get("sounds", {})
     user_input.update(survey_data)
     user_input.update(sleep_data)
+    user_input.update(sounds_data)
     del user_input["survey"]
     del user_input["sleepData"]
+    del user_input["sounds"]
     
     # previousRecommendations가 비어있거나 없는 경우를 확인
     if not user_input.get("previousRecommendations") or len(user_input.get("previousRecommendations", [])) == 0:
@@ -304,13 +302,16 @@ def get_combined_recommendation(request: CombinedDataDto) -> Dict:
     """
     user_input = request.dict()
     
-    # survey와 sleepData를 최상위로 평탄화
+    # survey, sleepData, sounds를 최상위로 평탄화
     survey_data = user_input.get("survey", {})
     sleep_data = user_input.get("sleepData", {})
+    sounds_data = user_input.get("sounds", {})
     user_input.update(survey_data)
     user_input.update(sleep_data)
+    user_input.update(sounds_data)
     del user_input["survey"]
     del user_input["sleepData"]
+    del user_input["sounds"]
     
     # previousRecommendations가 있는지 확인
     if user_input.get("previousRecommendations") and len(user_input.get("previousRecommendations", [])) > 0:
