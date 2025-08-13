@@ -17,7 +17,25 @@ def recommend(user_input: dict):
     # 2. FAISS 유사도 반환
     similar_sounds = recommend_by_vector(embedding)
 
-    # 3. LLM 추천 멘트를 위해 Top 3만 추림
+    # 3. preferredSounds가 있는 경우 점수 계산 적용
+    if user_input.get("preferredSounds"):
+        print("[recommend] Using scoring with preferred sounds")
+        # 설문 기반 추천이지만 선호 사운드가 있는 경우 점수 계산 적용
+        scored = compute_final_scores(
+            candidates=similar_sounds,
+            preferred_ids=user_input["preferredSounds"],
+            effectiveness_input={
+                "prev_score": 70,  # 설문 기반이므로 기본값 사용
+                "curr_score": 70,  # 설문 기반이므로 기본값 사용
+                "main_sounds": user_input.get("previousRecommendations", [])[:1],
+                "sub_sounds": user_input.get("previousRecommendations", [])[1:]
+            },
+            balance=user_input.get("preferenceBalance", 0.5)
+        )
+        # 점수 계산 결과를 사용
+        similar_sounds = [s["sound"] for s in scored]
+
+    # 4. LLM 추천 멘트를 위해 Top 3만 추림
     top_3_for_llm = similar_sounds[:3]
 
     # 사용자의 사운드 취향 정보 전달
@@ -26,7 +44,7 @@ def recommend(user_input: dict):
         "calmingSoundType": user_input.get("calmingSoundType")
     }
 
-    # 4. LLM 호출로 추천 멘트 생성
+    # 5. LLM 호출로 추천 멘트 생성
     final_recommendation_text = ""
     try:
         final_recommendation_text = generate_recommendation_text(
@@ -45,12 +63,12 @@ def recommend(user_input: dict):
         )
         final_recommendation_text = fallback_text
     
-    # 5. 응답을 위해 rank, preference 필드 추가
+    # 6. 응답을 위해 rank, preference 필드 추가
     for i, sound_obj in enumerate(similar_sounds):
         sound_obj['rank'] = i + 1
         sound_obj['preference'] = 'none'
 
-    # 6. 최종 응답 리턴
+    # 7. 최종 응답 리턴
     return {
         "recommendation_text": final_recommendation_text,
         "recommended_sounds": similar_sounds
