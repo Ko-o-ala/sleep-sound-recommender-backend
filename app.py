@@ -68,7 +68,7 @@ class SurveyData(BaseModel):
     exerciseWhen: Optional[str] = None
     screenTimeBeforeSleep: Optional[str] = None
     stressLevel: Optional[str] = None
-    sleepGoal: Optional[List[str]] = None
+    sleepGoal: Optional[str] = None
     preferredFeedbackFormat: Optional[str] = None
     preferenceBalance: Optional[int] = Field(default=5, ge=0, le=10, description="선호도 vs 효과성 밸런스 (0=선호도 중심, 10=효과성 중심, 5=균형)")
 
@@ -116,7 +116,7 @@ class UserSurveyDto(BaseModel):
                         "exerciseWhen": "morning",
                         "screenTimeBeforeSleep": "over1hour",
                         "stressLevel": "medium",
-                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
+                        "sleepGoal": "fallAsleepFast",
                         "preferredFeedbackFormat": "text",
                         "preferenceBalance": 6
                     }
@@ -206,6 +206,7 @@ class CombinedDataDto(BaseModel):
     
     userID: str = Field(..., description="사용자 ID")
     date: str = Field(..., description="요청 날짜")
+
     survey: SurveyData
     sleepData: SleepData
 
