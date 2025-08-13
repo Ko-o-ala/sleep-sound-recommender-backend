@@ -185,11 +185,7 @@ class CombinedDataDto(BaseModel):
                             "lightSleepRatio": 0.51,
                             "awakeRatio": 0.13
                         },
-                        "previousRecommendations": [
-                            "ASMR_2_HAIR.mp3",
-                            "ASMR_3_TAPPING.mp3",
-                            "FIRE_2.mp3"
-                        ]
+                        "previousRecommendations": []
                     }
                 }
             ]
