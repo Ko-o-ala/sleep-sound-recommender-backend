@@ -32,39 +32,37 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# 설문조사 데이터 스키마
+# 설문 데이터 스키마
 class SurveyData(BaseModel):
-    sleepLightUsage: Optional[str] = None
-    lightColorTemperature: Optional[str] = None
-    noisePreference: Optional[str] = None
-    noisePreferenceOther: Optional[str] = None
-    youtubeContentType: Optional[str] = None
-    youtubeContentTypeOther: Optional[str] = None
-    usualBedtime: Optional[str] = None
-    usualWakeupTime: Optional[str] = None
-    dayActivityType: Optional[str] = None
-    morningSunlightExposure: Optional[str] = None
-    napFrequency: Optional[str] = None
-    napDuration: Optional[str] = None
-    mostDrowsyTime: Optional[str] = None
-    averageSleepDuration: Optional[str] = None
-    sleepIssues: Optional[List[str]] = None
-    emotionalSleepInterference: Optional[List[str]] = None
-    emotionalSleepInterferenceOther: Optional[str] = None
-    preferredSleepSound: Optional[str] = None
-    calmingSoundType: Optional[str] = None
-    calmingSoundTypeOther: Optional[str] = None
-    sleepDevicesUsed: Optional[List[str]] = None
-    soundAutoOffType: Optional[str] = None
-    timeToFallAsleep: Optional[str] = None
-    caffeineIntakeLevel: Optional[str] = None
-    exerciseFrequency: Optional[str] = None
-    exerciseWhen: Optional[str] = None
-    screenTimeBeforeSleep: Optional[str] = None
-    stressLevel: Optional[str] = None
-    sleepGoal: Optional[str] = None
-    preferredFeedbackFormat: Optional[str] = None
-    preferenceBalance: Optional[float] = Field(default=0.5, ge=0.0, le=1.0, description="선호도 vs 효과성 밸런스 (0.0=선호도 중심, 1.0=효과성 중심, 0.5=균형)")
+    sleepLightUsage: str = Field(..., description="수면 조명 사용 여부")
+    lightColorTemperature: str = Field(..., description="조명 색온도")
+    noisePreference: str = Field(..., description="소음 선호도")
+    noisePreferenceOther: str = Field(..., description="기타 소음 선호도")
+    youtubeContentType: str = Field(..., description="유튜브 콘텐츠 타입")
+    youtubeContentTypeOther: str = Field(..., description="기타 유튜브 콘텐츠 타입")
+    usualBedtime: str = Field(..., description="일반적인 취침 시간")
+    usualWakeupTime: str = Field(..., description="일반적인 기상 시간")
+    dayActivityType: str = Field(..., description="주간 활동 타입")
+    morningSunlightExposure: str = Field(..., description="아침 햇빛 노출")
+    napFrequency: str = Field(..., description="낮잠 빈도")
+    napDuration: str = Field(..., description="낮잠 지속 시간")
+    mostDrowsyTime: str = Field(..., description="가장 졸린 시간")
+    averageSleepDuration: str = Field(..., description="평균 수면 시간")
+    sleepIssues: List[str] = Field(..., description="수면 문제")
+    emotionalSleepInterference: List[str] = Field(..., description="감정적 수면 방해 요소")
+    emotionalSleepInterferenceOther: str = Field(..., description="기타 감정적 수면 방해 요소")
+    preferredSleepSound: str = Field(..., description="선호하는 수면 사운드")
+    calmingSoundType: str = Field(..., description="진정 사운드 타입")
+    calmingSoundTypeOther: str = Field(..., description="기타 진정 사운드 타입")
+    sleepDevicesUsed: List[str] = Field(..., description="사용하는 수면 기기")
+    timeToFallAsleep: str = Field(..., description="잠들기까지 걸리는 시간")
+    caffeineIntakeLevel: str = Field(..., description="카페인 섭취 수준")
+    exerciseFrequency: str = Field(..., description="운동 빈도")
+    exerciseWhen: str = Field(..., description="운동 시간대")
+    screenTimeBeforeSleep: str = Field(..., description="취침 전 화면 사용 시간")
+    stressLevel: str = Field(..., description="스트레스 수준")
+    sleepGoal: List[str] = Field(..., description="수면 목표")
+    preferenceBalance: float = Field(default=0.5, ge=0.0, le=1.0, description="선호도 균형 (0.0-1.0)")
 
 # 수면 데이터 스키마
 class SleepData(BaseModel):
@@ -76,13 +74,13 @@ class SoundsData(BaseModel):
     preferredSounds: List[str] = []
     previousRecommendations: List[str] = []
 
-# 설문 응답 기반 입력 스키마 (설문조사 데이터만)
+# 설문 기반 추천 입력 스키마
 class UserSurveyDto(BaseModel):
     model_config = ConfigDict(
         json_schema_extra={
             "examples": [
                 {
-                    "userID": "seoin2744",
+                    "userID": "user123",
                     "date": "2025-07-15T00:00:00.000+00:00",
                     "survey": {
                         "sleepLightUsage": "moodLight",
@@ -106,15 +104,13 @@ class UserSurveyDto(BaseModel):
                         "calmingSoundType": "waves",
                         "calmingSoundTypeOther": "",
                         "sleepDevicesUsed": ["watch", "app"],
-                        "soundAutoOffType": "autoOff1hour",
                         "timeToFallAsleep": "over30min",
                         "caffeineIntakeLevel": "1to2cups",
                         "exerciseFrequency": "daily",
                         "exerciseWhen": "morning",
                         "screenTimeBeforeSleep": "over1hour",
                         "stressLevel": "medium",
-                        "sleepGoal": "fallAsleepFast",
-                        "preferredFeedbackFormat": "text",
+                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
                         "preferenceBalance": 0.6
                     }
                 }
@@ -137,36 +133,35 @@ class CombinedDataNewDto(BaseModel):
                     "userID": "user123",
                     "date": "2025-07-15T00:00:00.000+00:00",
                     "survey": {
-                        "sleepLightUsage": "none",
+                        "sleepLightUsage": "moodLight",
                         "lightColorTemperature": "warmYellow",
-                        "noisePreference": "nature",
+                        "noisePreference": "other",
                         "noisePreferenceOther": "팝송",
-                        "youtubeContentType": "none",
+                        "youtubeContentType": "other",
                         "youtubeContentTypeOther": "아이돌 영상",
                         "usualBedtime": "12to2am",
                         "usualWakeupTime": "7to9am",
                         "dayActivityType": "outdoor",
-                        "morningSunlightExposure": "daily",
-                        "napFrequency": "none",
-                        "napDuration": "none",
+                        "morningSunlightExposure": "sometimes",
+                        "napFrequency": "1to2perWeek",
+                        "napDuration": "15to30",
                         "mostDrowsyTime": "afternoon",
                         "averageSleepDuration": "4to6h",
-                        "sleepIssues": ["fallAsleepHard", "wakeOften"],
+                        "sleepIssues": ["fallAsleepHard", "wakeOften", "nightmares"],
                         "emotionalSleepInterference": ["stress", "anxiety"],
                         "emotionalSleepInterferenceOther": "",
-                        "preferredSleepSound": "nature",
-                        "calmingSoundType": "rain",
+                        "preferredSleepSound": "music",
+                        "calmingSoundType": "waves",
                         "calmingSoundTypeOther": "",
-                        "sleepDevicesUsed": [],
-                        "soundAutoOffType": "autoOff1hour",
+                        "sleepDevicesUsed": ["watch", "app"],
                         "timeToFallAsleep": "over30min",
-                        "caffeineIntakeLevel": "none",
-                        "exerciseFrequency": "sometimes",
-                        "screenTimeBeforeSleep": "30minTo1hour",
-                        "stressLevel": "high",
-                        "sleepGoal": "improveSleepQuality",
-                        "preferredFeedbackFormat": "text",
-                        "preferenceBalance": 0.7
+                        "caffeineIntakeLevel": "1to2cups",
+                        "exerciseFrequency": "daily",
+                        "exerciseWhen": "morning",
+                        "screenTimeBeforeSleep": "over1hour",
+                        "stressLevel": "medium",
+                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
+                        "preferenceBalance": 0.6
                     },
                     "sleepData": {
                         "previous": {
@@ -214,36 +209,35 @@ class CombinedDataExistingDto(BaseModel):
                     "userID": "user123",
                     "date": "2025-07-15T00:00:00.000+00:00",
                     "survey": {
-                        "sleepLightUsage": "none",
+                        "sleepLightUsage": "moodLight",
                         "lightColorTemperature": "warmYellow",
-                        "noisePreference": "nature",
+                        "noisePreference": "other",
                         "noisePreferenceOther": "팝송",
-                        "youtubeContentType": "none",
+                        "youtubeContentType": "other",
                         "youtubeContentTypeOther": "아이돌 영상",
                         "usualBedtime": "12to2am",
                         "usualWakeupTime": "7to9am",
                         "dayActivityType": "outdoor",
-                        "morningSunlightExposure": "daily",
-                        "napFrequency": "none",
-                        "napDuration": "none",
+                        "morningSunlightExposure": "sometimes",
+                        "napFrequency": "1to2perWeek",
+                        "napDuration": "15to30",
                         "mostDrowsyTime": "afternoon",
                         "averageSleepDuration": "4to6h",
-                        "sleepIssues": ["fallAsleepHard", "wakeOften"],
+                        "sleepIssues": ["fallAsleepHard", "wakeOften", "nightmares"],
                         "emotionalSleepInterference": ["stress", "anxiety"],
                         "emotionalSleepInterferenceOther": "",
-                        "preferredSleepSound": "nature",
-                        "calmingSoundType": "rain",
+                        "preferredSleepSound": "music",
+                        "calmingSoundType": "waves",
                         "calmingSoundTypeOther": "",
-                        "sleepDevicesUsed": [],
-                        "soundAutoOffType": "autoOff1hour",
+                        "sleepDevicesUsed": ["watch", "app"],
                         "timeToFallAsleep": "over30min",
-                        "caffeineIntakeLevel": "none",
-                        "exerciseFrequency": "sometimes",
-                        "screenTimeBeforeSleep": "30minTo1hour",
-                        "stressLevel": "high",
-                        "sleepGoal": "improveSleepQuality",
-                        "preferredFeedbackFormat": "text",
-                        "preferenceBalance": 0.7
+                        "caffeineIntakeLevel": "1to2cups",
+                        "exerciseFrequency": "daily",
+                        "exerciseWhen": "morning",
+                        "screenTimeBeforeSleep": "over1hour",
+                        "stressLevel": "medium",
+                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
+                        "preferenceBalance": 0.6
                     },
                     "sleepData": {
                         "previous": {
