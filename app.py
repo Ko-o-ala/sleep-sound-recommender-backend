@@ -12,13 +12,7 @@ load_dotenv()
 from services.recommender import recommend, recommend_with_both_data
 from services.data_fetcher import data_fetcher
 
-# API 키 확인
-api_key = os.getenv("MAIN_SERVER_API_KEY")
-if not api_key:
-    print("⚠️  WARNING: MAIN_SERVER_API_KEY is not set!")
-    print("   Please set the environment variable or add it to .env file")
-else:
-    print("✅ MAIN_SERVER_API_KEY is configured")
+
 
 # 응답 모델 정의
 class SoundRecommendation(BaseModel):
