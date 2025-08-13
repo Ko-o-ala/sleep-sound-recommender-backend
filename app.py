@@ -128,8 +128,8 @@ class UserSurveyDto(BaseModel):
     date: str = Field(..., description="요청 날짜")
     survey: SurveyData
 
-# 통합 추천 입력 스키마 (수면 데이터 + 설문 데이터)
-class CombinedDataDto(BaseModel):
+# 통합 추천 입력 스키마 (기존 추천결과 없음)
+class CombinedDataNewDto(BaseModel):
     model_config = ConfigDict(
         json_schema_extra={
             "examples": [
@@ -205,6 +205,87 @@ class CombinedDataDto(BaseModel):
     sleepData: SleepData
     sounds: SoundsData
 
+# 통합 추천 입력 스키마 (기존 추천결과 있음)
+class CombinedDataExistingDto(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "userID": "user123",
+                    "date": "2025-07-15T00:00:00.000+00:00",
+                    "survey": {
+                        "sleepLightUsage": "none",
+                        "lightColorTemperature": "warmYellow",
+                        "noisePreference": "nature",
+                        "noisePreferenceOther": "팝송",
+                        "youtubeContentType": "none",
+                        "youtubeContentTypeOther": "아이돌 영상",
+                        "usualBedtime": "12to2am",
+                        "usualWakeupTime": "7to9am",
+                        "dayActivityType": "outdoor",
+                        "morningSunlightExposure": "daily",
+                        "napFrequency": "none",
+                        "napDuration": "none",
+                        "mostDrowsyTime": "afternoon",
+                        "averageSleepDuration": "4to6h",
+                        "sleepIssues": ["fallAsleepHard", "wakeOften"],
+                        "emotionalSleepInterference": ["stress", "anxiety"],
+                        "emotionalSleepInterferenceOther": "",
+                        "preferredSleepSound": "nature",
+                        "calmingSoundType": "rain",
+                        "calmingSoundTypeOther": "",
+                        "sleepDevicesUsed": [],
+                        "soundAutoOffType": "autoOff1hour",
+                        "timeToFallAsleep": "over30min",
+                        "caffeineIntakeLevel": "none",
+                        "exerciseFrequency": "sometimes",
+                        "screenTimeBeforeSleep": "30minTo1hour",
+                        "stressLevel": "high",
+                        "sleepGoal": "improveSleepQuality",
+                        "preferredFeedbackFormat": "text",
+                        "preferenceBalance": 0.7
+                    },
+                    "sleepData": {
+                        "previous": {
+                            "sleepScore": 68,
+                            "deepSleepRatio": 0.12,
+                            "remSleepRatio": 0.14,
+                            "lightSleepRatio": 0.56,
+                            "awakeRatio": 0.18
+                        },
+                        "current": {
+                            "sleepScore": 75,
+                            "deepSleepRatio": 0.17,
+                            "remSleepRatio": 0.19,
+                            "lightSleepRatio": 0.51,
+                            "awakeRatio": 0.13
+                        }
+                    },
+                    "sounds": {
+                        "preferredSounds": [
+                            "NATURE_1_WATER.mp3",
+                            "WHITE_2_UNDERWATER.mp3",
+                            "ASMR_2_HAIR.mp3"
+                        ],
+                        "previousRecommendations": [
+                            "ASMR_2_HAIR.mp3",
+                            "ASMR_3_TAPPING.mp3",
+                            "FIRE_2.mp3"
+                        ]
+                    }
+                }
+            ]
+        },
+        json_schema_serialization_defaults=True,
+        populate_by_name=True
+    )
+    
+    userID: str = Field(..., description="사용자 ID")
+    date: str = Field(..., description="요청 날짜")
+    survey: SurveyData
+    sleepData: SleepData
+    sounds: SoundsData
+
 # API 엔드포인트 정의
 @app.post(
     "/recommend", 
@@ -244,7 +325,7 @@ def get_recommendation(request: UserSurveyDto) -> Dict:
     description="수면 데이터와 설문 데이터를 모두 전송받아 첫 번째 추천을 제공합니다. 사용 시나리오: 클라이언트가 수면 데이터와 설문 데이터를 모두 가지고 있지만, 기존 추천 결과가 없는 경우. 입력 데이터: 수면 패턴 정보 + 설문조사 결과 (previousRecommendations 필드 제외). 추천 방식: 수면 데이터 분석 + 설문 선호도 반영 + 신규 추천 알고리즘",
     response_model=RecommendResponse
 )
-def get_new_combined_recommendation(request: CombinedDataDto) -> Dict:
+def get_new_combined_recommendation(request: CombinedDataNewDto) -> Dict:
     """
     수면 데이터와 설문 데이터를 활용하여 첫 번째 추천을 제공합니다.
     기존 추천 결과가 없는 경우를 위한 엔드포인트입니다.
@@ -289,7 +370,7 @@ def get_new_combined_recommendation(request: CombinedDataDto) -> Dict:
     description="수면 데이터, 설문 데이터, 기존 추천 결과를 모두 전송받아 추천을 업데이트합니다. 사용 시나리오: 클라이언트가 수면 데이터, 설문 데이터, 기존 추천 결과를 모두 가지고 있는 경우. 입력 데이터: 수면 패턴 정보 + 설문조사 결과 + 기존 추천 결과 (previousRecommendations 필드 필수). 추천 방식: 수면 데이터 분석 + 설문 선호도 반영 + 기존 추천 결과 학습 + 개선된 추천 알고리즘",
     response_model=RecommendResponse
 )
-def get_combined_recommendation(request: CombinedDataDto) -> Dict:
+def get_combined_recommendation(request: CombinedDataExistingDto) -> Dict:
     """
     수면 데이터, 설문 데이터, 기존 추천 결과를 모두 활용하여 추천을 업데이트합니다.
     기존 추천 결과가 있는 경우를 위한 엔드포인트입니다.
