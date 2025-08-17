@@ -114,7 +114,7 @@ class SleepData(BaseModel):
 
 # 사운드 데이터 스키마
 class SoundsData(BaseModel):
-    preferredSounds: List[str] = []
+    preferredSounds: Optional[List[str]] = Field(default=[], description="선호하는 사운드 목록 (선택사항)")
     previousRecommendations: List[str] = []
 
 # 설문 기반 추천 입력 스키마

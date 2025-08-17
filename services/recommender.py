@@ -18,7 +18,7 @@ def recommend(user_input: dict):
     similar_sounds = recommend_by_vector(embedding)
 
     # 3. preferredSounds가 있는 경우 점수 계산 적용
-    if user_input.get("preferredSounds"):
+    if user_input.get("preferredSounds") is not None:
         print("[recommend] Using scoring with preferred sounds")
         # 설문 기반 추천이지만 선호 사운드가 있는 경우 점수 계산 적용
         scored = compute_final_scores(
