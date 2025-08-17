@@ -19,7 +19,6 @@ from services.data_fetcher import data_fetcher
 class SoundRecommendation(BaseModel):
     filename: str = Field(..., description="사운드 파일명")
     rank: int = Field(..., description="추천 순위 (1부터 시작)")
-    preference: str = Field(..., description="사용자 선호도 (top/none)")
 
 class RecommendResponse(BaseModel):
     userID: str = Field(..., description="사용자 ID")
@@ -115,7 +114,7 @@ class SleepData(BaseModel):
 
 # 사운드 데이터 스키마
 class SoundsData(BaseModel):
-    preferredSounds: List[str] = []
+    preferredSounds: Optional[List[str]] = Field(default=[], description="선호하는 사운드 목록 (선택사항)")
     previousRecommendations: List[str] = []
 
 # 설문 기반 추천 입력 스키마
