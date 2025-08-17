@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Dict, Optional, Any, Union
 import os
 from dotenv import load_dotenv
+from starlette.responses import JSONResponse
 
 # .env 파일 로드 (import 전에 먼저 실행)
 load_dotenv()
@@ -31,6 +32,49 @@ app = FastAPI(
     title="수면 사운드 추천 API",
     version="1.0.0"
 )
+
+# 에러 로깅 미들웨어
+@app.middleware("http")
+async def log_errors(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        return response
+    except HTTPException as e:
+        # HTTPException의 경우 상세 정보 로깅
+        print(f"❌ HTTP Error {e.status_code}: {e.detail}")
+        print(f"   URL: {request.url}")
+        print(f"   Method: {request.method}")
+        if request.method == "POST":
+            try:
+                body = await request.body()
+                print(f"   Request Body: {body.decode()}")
+            except:
+                print("   Request Body: Could not read")
+        raise e
+    except Exception as e:
+        # 기타 예외의 경우
+        print(f"❌ Unexpected Error: {str(e)}")
+        print(f"   URL: {request.url}")
+        print(f"   Method: {request.method}")
+        raise e
+
+# Pydantic 검증 에러 핸들러
+@app.exception_handler(422)
+async def validation_exception_handler(request: Request, exc):
+    print(f"❌ Validation Error (422):")
+    print(f"   URL: {request.url}")
+    print(f"   Method: {request.method}")
+    if request.method == "POST":
+        try:
+            body = await request.body()
+            print(f"   Request Body: {body.decode()}")
+        except:
+            print("   Request Body: Could not read")
+    print(f"   Validation Details: {exc.detail}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.detail}
+    )
 
 # 설문 데이터 스키마
 class SurveyData(BaseModel):
