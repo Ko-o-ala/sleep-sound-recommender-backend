@@ -120,7 +120,7 @@ def recommend_with_both_data(user_input: dict, is_new_user: bool = True):
         
         scored = compute_final_scores(
             candidates=similar_sounds,
-            preferred_ids=user_input["preferredSounds"],
+            preferred_ids=user_input.get("preferredSounds", []),  # preferredSounds가 없으면 빈 리스트 사용
             effectiveness_input={
                 "prev_score": prev_score,
                 "curr_score": curr_score,
@@ -144,7 +144,7 @@ def recommend_with_both_data(user_input: dict, is_new_user: bool = True):
         
         scored = compute_final_scores(
             candidates=similar_sounds,
-            preferred_ids=user_input["preferredSounds"],
+            preferred_ids=user_input.get("preferredSounds", []),  # preferredSounds가 없으면 빈 리스트 사용
             effectiveness_input={
                 "prev_score": prev_score,
                 "curr_score": curr_score,
@@ -184,10 +184,11 @@ def recommend_with_both_data(user_input: dict, is_new_user: bool = True):
     print("[recommend_with_both_data] LLM text:", text)
     
     # 7. 응답 형식 맞추기
+    preferred_sounds = user_input.get("preferredSounds", [])
     for i, s in enumerate(scored):
         s["sound"]["rank"] = i + 1
         s["sound"]["preference"] = (
-            "top" if s["id"] in user_input["preferredSounds"] else "none"
+            "top" if s["id"] in preferred_sounds else "none"
         )
     
     return {
