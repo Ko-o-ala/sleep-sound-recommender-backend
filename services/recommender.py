@@ -63,10 +63,9 @@ def recommend(user_input: dict):
         )
         final_recommendation_text = fallback_text
     
-    # 6. 응답을 위해 rank, preference 필드 추가
+    # 6. 응답을 위해 rank 필드 추가
     for i, sound_obj in enumerate(similar_sounds):
         sound_obj['rank'] = i + 1
-        sound_obj['preference'] = 'none'
 
     # 7. 최종 응답 리턴
     return {
@@ -184,12 +183,8 @@ def recommend_with_both_data(user_input: dict, is_new_user: bool = True):
     print("[recommend_with_both_data] LLM text:", text)
     
     # 7. 응답 형식 맞추기
-    preferred_sounds = user_input.get("preferredSounds", [])
     for i, s in enumerate(scored):
         s["sound"]["rank"] = i + 1
-        s["sound"]["preference"] = (
-            "top" if s["id"] in preferred_sounds else "none"
-        )
     
     return {
         "recommendation_text": text,

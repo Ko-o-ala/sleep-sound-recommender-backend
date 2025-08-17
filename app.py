@@ -19,7 +19,6 @@ from services.data_fetcher import data_fetcher
 class SoundRecommendation(BaseModel):
     filename: str = Field(..., description="사운드 파일명")
     rank: int = Field(..., description="추천 순위 (1부터 시작)")
-    preference: str = Field(..., description="사용자 선호도 (top/none)")
 
 class RecommendResponse(BaseModel):
     userID: str = Field(..., description="사용자 ID")
