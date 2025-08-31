@@ -23,19 +23,54 @@ def build_prompt(user_survey: Dict[str, any]) -> str:
     translated_noise_other = translate_korean_to_english(noise_other)
     translated_youtube_other = translate_korean_to_english(youtube_other)
 
-    # 3. 주요 필드를 문장으로 조립
+    # 3. 주요 필드를 더 구체적으로 문장으로 조립
     if goal := user_survey.get("sleepGoal"):
-        phrases.append(f"wants to achieve the goal of '{goal}'")
+        if isinstance(goal, list):
+            goal_text = ", ".join(goal)
+        else:
+            goal_text = goal
+        phrases.append(f"wants to achieve the goal of '{goal_text}'")
+    
     if issues := user_survey.get("sleepIssues"):
-        phrases.append(f"is experiencing sleep issues like '{', '.join(issues)}'")
+        if isinstance(issues, list):
+            issues_text = ", ".join(issues)
+        else:
+            issues_text = issues
+        phrases.append(f"is experiencing sleep issues like '{issues_text}'")
+    
     if stress := user_survey.get("stressLevel"):
         phrases.append(f"and has a '{stress}' stress level.")
+    
     if sound_pref := user_survey.get("preferredSleepSound"):
         phrases.append(f"They generally prefer '{sound_pref}' sounds.")
+    
+    if calming_type := user_survey.get("calmingSoundType"):
+        phrases.append(f"They find '{calming_type}' sounds most calming.")
+    
     if translated_noise_other:
         phrases.append(f"and also likes '{translated_noise_other}'.")
+    
     if translated_youtube_other:
         phrases.append(f"They also watch '{translated_youtube_other}' on YouTube.")
+    
+    # 추가적인 구체적인 정보들
+    if bedtime := user_survey.get("usualBedtime"):
+        phrases.append(f"They usually go to bed around '{bedtime}'.")
+    
+    if wakeup := user_survey.get("usualWakeupTime"):
+        phrases.append(f"They usually wake up around '{wakeup}'.")
+    
+    if activity := user_survey.get("dayActivityType"):
+        phrases.append(f"They have '{activity}' daily activities.")
+    
+    if caffeine := user_survey.get("caffeineIntakeLevel"):
+        phrases.append(f"They consume '{caffeine}' caffeine.")
+    
+    if exercise := user_survey.get("exerciseFrequency"):
+        phrases.append(f"They exercise '{exercise}'.")
+    
+    if screen_time := user_survey.get("screenTimeBeforeSleep"):
+        phrases.append(f"They use screens '{screen_time}' before sleep.")
 
     # 4. 아무 정보도 없을 경우 fallback 문장
     if not phrases:

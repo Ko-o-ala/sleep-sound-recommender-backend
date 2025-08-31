@@ -31,7 +31,7 @@ def choose_weights(balance=None):
         beta = balance * 0.5  # 효과성 가중치 (0.0 ~ 0.5)
         return alpha, beta
     
-    # 기본값: 균형형
+    # 기본값: 균형형 (0.5)
     return 0.25, 0.25
 
 

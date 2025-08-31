@@ -1,5 +1,9 @@
 # app.py
 
+import warnings
+# multiprocessing 관련 경고 숨기기
+warnings.filterwarnings("ignore", category=UserWarning, module="multiprocessing.resource_tracker")
+
 from fastapi import FastAPI, HTTPException, Request, Path, Query
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Dict, Optional, Any, Union
