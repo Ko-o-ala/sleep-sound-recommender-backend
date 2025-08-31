@@ -8,8 +8,8 @@ bedrock_runtime = boto3.client(
     region_name="us-east-1"
 )
 
-# Claude 3 Sonnet
-MODEL_ID = "anthropic.claude-3-sonnet-20240229-v1:0"
+# Claude 3 Haiku
+MODEL_ID = "anthropic.claude-3-haiku-20240307-v1:0"
 
 def generate_recommendation_text(
     user_prompt: Union[str, Dict],
