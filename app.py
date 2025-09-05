@@ -118,8 +118,8 @@ class SleepData(BaseModel):
 
 # 사운드 데이터 스키마
 class SoundsData(BaseModel):
-    preferredSounds: Optional[List[str]] = Field(default=[], description="선호하는 사운드 목록 (선택사항)")
-    previousRecommendations: List[str] = []
+    preferredSounds: Optional[List[str]] = Field(default=None, description="선호하는 사운드 목록 (선택사항)")
+    previousRecommendations: Optional[List[str]] = Field(default=None, description="이전 추천 결과 (선택사항)")
 
 # 설문 기반 추천 입력 스키마
 class UserSurveyDto(BaseModel):
@@ -466,7 +466,7 @@ class CombinedDataExistingDto(BaseModel):
     date: str = Field(..., description="요청 날짜")
     survey: SurveyData
     sleepData: SleepData
-    sounds: SoundsData
+    sounds: Optional[SoundsData] = Field(None, description="선호 사운드 및 이전 추천 결과 (선택사항)")
 
 # API 엔드포인트 정의
 @app.post(
@@ -496,7 +496,10 @@ def get_recommendation(request: UserSurveyDto) -> Dict:
     # sounds 데이터가 있으면 최상위로 평탄화
     if user_input.get("sounds"):
         sounds_data = user_input.get("sounds", {})
-        user_input.update(sounds_data)
+        # 빈 배열인 필드들은 제거
+        for key, value in sounds_data.items():
+            if value is not None and len(value) > 0:
+                user_input[key] = value
         del user_input["sounds"]
     
     result = recommend(user_input)
@@ -571,7 +574,13 @@ def get_combined_recommendation(request: CombinedDataExistingDto) -> Dict:
     sounds_data = user_input.get("sounds", {})
     user_input.update(survey_data)
     user_input.update(sleep_data)
-    user_input.update(sounds_data)
+    
+    # sounds 데이터가 있으면 빈 배열인 필드들은 제거하고 추가
+    if sounds_data:
+        for key, value in sounds_data.items():
+            if value is not None and len(value) > 0:
+                user_input[key] = value
+    
     del user_input["survey"]
     del user_input["sleepData"]
     del user_input["sounds"]
