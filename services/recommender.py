@@ -40,7 +40,6 @@ def recommend(user_input: dict):
 
     # 사용자의 사운드 취향 정보 전달
     user_preferences = {
-        "preferredSleepSound": user_input.get("preferredSleepSound"),
         "calmingSoundType": user_input.get("calmingSoundType")
     }
 
@@ -160,7 +159,6 @@ def recommend_with_both_data(user_input: dict, is_new_user: bool = True):
     
     # 6. LLM으로 추천 텍스트 생성 (기존 추천 결과 유무에 따라 다른 프롬프트)
     user_preferences = {
-        "preferredSleepSound": user_input.get("preferredSleepSound"),
         "calmingSoundType": user_input.get("calmingSoundType"),
         "noisePreference": user_input.get("noisePreference")
     }

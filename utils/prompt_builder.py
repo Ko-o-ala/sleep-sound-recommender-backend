@@ -17,11 +17,9 @@ def build_prompt(user_survey: Dict[str, any]) -> str:
 
     # 1. 한글이 포함될 수 있는 기타 항목 추출 (값이 없을 경우 빈 문자열로 대체함)
     noise_other = user_survey.get("noisePreferenceOther") or ""
-    youtube_other = user_survey.get("youtubeContentTypeOther") or ""
 
     # 2. 번역 수행 (한글 -> 영어)
     translated_noise_other = translate_korean_to_english(noise_other)
-    translated_youtube_other = translate_korean_to_english(youtube_other)
 
     # 3. 주요 필드를 더 구체적으로 문장으로 조립
     if goal := user_survey.get("sleepGoal"):
@@ -41,17 +39,11 @@ def build_prompt(user_survey: Dict[str, any]) -> str:
     if stress := user_survey.get("stressLevel"):
         phrases.append(f"and has a '{stress}' stress level.")
     
-    if sound_pref := user_survey.get("preferredSleepSound"):
-        phrases.append(f"They generally prefer '{sound_pref}' sounds.")
-    
     if calming_type := user_survey.get("calmingSoundType"):
         phrases.append(f"They find '{calming_type}' sounds most calming.")
     
     if translated_noise_other:
         phrases.append(f"and also likes '{translated_noise_other}'.")
-    
-    if translated_youtube_other:
-        phrases.append(f"They also watch '{translated_youtube_other}' on YouTube.")
     
     # 추가적인 구체적인 정보들
     if bedtime := user_survey.get("usualBedtime"):
