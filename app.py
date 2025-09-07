@@ -105,7 +105,7 @@ class SurveyData(BaseModel):
     exerciseWhen: str = Field(..., description="운동 시간대")
     screenTimeBeforeSleep: str = Field(..., description="취침 전 화면 사용 시간")
     stressLevel: str = Field(..., description="스트레스 수준")
-    sleepGoal: List[str] = Field(..., description="수면 목표")
+    sleepGoal: str = Field(..., description="수면 목표")
     preferenceBalance: float = Field(default=0.5, ge=0.0, le=1.0, description="선호도 균형 (0.0-1.0)")
 
 # 수면 데이터 스키마
@@ -151,7 +151,7 @@ class UserSurveyDto(BaseModel):
                         "exerciseWhen": "8to12",
                         "screenTimeBeforeSleep": "1hto2h",
                         "stressLevel": "medium",
-                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
+                        "sleepGoal": "fallAsleepFast",
                         "preferenceBalance": 0.6
                     }
                 },
@@ -183,7 +183,7 @@ class UserSurveyDto(BaseModel):
                         "exerciseWhen": "8to12",
                         "screenTimeBeforeSleep": "1hto2h",
                         "stressLevel": "medium",
-                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
+                        "sleepGoal": "fallAsleepFast",
                         "preferenceBalance": 0.6
                     },
                     "sounds": {
@@ -243,7 +243,7 @@ class CombinedDataNewDto(BaseModel):
                         "exerciseWhen": "8to12",
                         "screenTimeBeforeSleep": "1hto2h",
                         "stressLevel": "medium",
-                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
+                        "sleepGoal": "fallAsleepFast",
                         "preferenceBalance": 0.6
                     },
                     "sleepData": {
@@ -291,7 +291,7 @@ class CombinedDataNewDto(BaseModel):
                         "exerciseWhen": "8to12",
                         "screenTimeBeforeSleep": "1hto2h",
                         "stressLevel": "medium",
-                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
+                        "sleepGoal": "fallAsleepFast",
                         "preferenceBalance": 0.6
                     },
                     "sleepData": {
@@ -349,7 +349,7 @@ class CombinedDataExistingDto(BaseModel):
                         "exerciseWhen": "8to12",
                         "screenTimeBeforeSleep": "1hto2h",
                         "stressLevel": "medium",
-                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
+                        "sleepGoal": "fallAsleepFast",
                         "preferenceBalance": 0.6
                     },
                     "sleepData": {
@@ -409,7 +409,7 @@ class CombinedDataExistingDto(BaseModel):
                         "exerciseWhen": "8to12",
                         "screenTimeBeforeSleep": "1hto2h",
                         "stressLevel": "medium",
-                        "sleepGoal": ["fallAsleepFast", "stayAsleep"],
+                        "sleepGoal": "fallAsleepFast",
                         "preferenceBalance": 0.6
                     },
                     "sleepData": {
